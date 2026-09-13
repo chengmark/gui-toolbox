@@ -7,6 +7,7 @@ import {
   getDefaultAppSettingsPath,
   getShippedAppSettingsDefaultPath,
   legacyAppSettingsPaths,
+  setScriptsDirOverride,
 } from './paths'
 
 export const APP_CONFIG_LOCALES = ['en', 'zh-CN', 'zh-TW'] as const
@@ -20,6 +21,8 @@ export type AppConfig = {
   scripts: {
     schemaVersion: 1
     scriptFavorites: string[]
+    /** Absolute scripts folder; null = shipped default under data/scripts. */
+    folderPath: string | null
   }
   translation: {
     enabled: boolean
@@ -47,9 +50,20 @@ export type AppSettingsPathInfo = {
 
 const DEFAULT_CONFIG: AppConfig = {
   common: { locale: null },
-  scripts: { schemaVersion: 1, scriptFavorites: [] },
+  scripts: { schemaVersion: 1, scriptFavorites: [], folderPath: null },
   translation: { enabled: false },
   updates: { skippedVersion: null },
+}
+
+function normalizeFolderPath(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  return path.resolve(trimmed)
+}
+
+function syncScriptsDirOverride(config: AppConfig): void {
+  setScriptsDirOverride(config.scripts.folderPath)
 }
 
 function isLocale(value: unknown): value is AppConfigLocale {
@@ -91,6 +105,7 @@ function normalizeConfig(raw: unknown): AppConfig {
       scripts: {
         schemaVersion: 1,
         scriptFavorites: normalizeFavorites(data.scriptFavorites),
+        folderPath: null,
       },
       translation: { enabled: DEFAULT_CONFIG.translation.enabled },
       updates: { skippedVersion: null },
@@ -121,6 +136,7 @@ function normalizeConfig(raw: unknown): AppConfig {
     scripts: {
       schemaVersion: 1,
       scriptFavorites: normalizeFavorites(scripts.scriptFavorites),
+      folderPath: normalizeFolderPath(scripts.folderPath),
     },
     translation: {
       enabled:
@@ -146,6 +162,11 @@ function needsRewrite(raw: unknown): boolean {
     return true
   }
   if (!('updates' in data)) return true
+  const scripts =
+    data.scripts && typeof data.scripts === 'object'
+      ? (data.scripts as Record<string, unknown>)
+      : null
+  if (!scripts || !('folderPath' in scripts)) return true
   return false
 }
 
@@ -276,6 +297,7 @@ export async function loadAppConfig(): Promise<AppConfig> {
   const filePath = await resolveAppConfigPath()
   const { raw, config, seededFromFactory } = await readSettingsFromDisk(filePath)
   cached = config
+  syncScriptsDirOverride(cached)
   // Create / migrate the writable settings file when missing or legacy-shaped.
   if (needsRewrite(raw) || raw == null || seededFromFactory) {
     await writeConfig(cached, filePath)
@@ -306,6 +328,10 @@ export async function patchAppConfig(patch: AppConfigPatch): Promise<AppConfig> 
         patch.scripts?.scriptFavorites === undefined
           ? current.scripts.scriptFavorites
           : normalizeFavorites(patch.scripts.scriptFavorites),
+      folderPath:
+        patch.scripts?.folderPath === undefined
+          ? current.scripts.folderPath
+          : normalizeFolderPath(patch.scripts.folderPath),
     },
     translation: {
       enabled:
@@ -325,6 +351,7 @@ export async function patchAppConfig(patch: AppConfigPatch): Promise<AppConfig> 
   }
 
   cached = next
+  syncScriptsDirOverride(next)
   writeQueue = writeQueue
     .then(() => writeConfig(next))
     .catch((error) => {
@@ -363,12 +390,14 @@ export async function setAppSettingsPath(nextPath: string): Promise<AppSettingsP
   const existing = await readJson(resolved)
   if (existing != null) {
     cached = normalizeConfig(existing)
+    syncScriptsDirOverride(cached)
     if (needsRewrite(existing)) {
       await writeConfig(cached, resolved)
     }
   } else {
     const factory = await readFactoryDefaults()
     cached = factory != null ? normalizeConfig(factory) : current
+    syncScriptsDirOverride(cached)
     await writeConfig(cached, resolved)
   }
 
@@ -382,12 +411,14 @@ export async function resetAppSettingsPath(): Promise<AppSettingsPathInfo> {
   const existing = await readJson(defaultPath)
   if (existing != null) {
     cached = normalizeConfig(existing)
+    syncScriptsDirOverride(cached)
     if (needsRewrite(existing)) {
       await writeConfig(cached, defaultPath)
     }
   } else {
     const factory = await readFactoryDefaults()
     cached = factory != null ? normalizeConfig(factory) : current
+    syncScriptsDirOverride(cached)
     await writeConfig(cached, defaultPath)
   }
   return getAppSettingsPathInfo()

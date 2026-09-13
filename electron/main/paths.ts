@@ -21,8 +21,23 @@ export function getConfigDir(): string {
   return path.join(getShippedDataDir(), 'config')
 }
 
-export function getScriptsDir(): string {
+/** Built-in scripts folder shipped with the app. */
+export function getDefaultScriptsDir(): string {
   return path.join(getShippedDataDir(), 'scripts')
+}
+
+/** Active override from app-settings (`scripts.folderPath`); null = default. */
+let scriptsDirOverride: string | null = null
+
+export function setScriptsDirOverride(folderPath: string | null): void {
+  scriptsDirOverride =
+    folderPath && folderPath.trim().length > 0
+      ? path.resolve(folderPath.trim())
+      : null
+}
+
+export function getScriptsDir(): string {
+  return scriptsDirOverride ?? getDefaultScriptsDir()
 }
 
 export function getKeybindJsonPath(): string {

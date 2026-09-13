@@ -15,6 +15,12 @@ export type ScriptRunnerStatus = {
   lastMessage: string | null
 }
 
+export type ScriptsDirInfo = {
+  folderPath: string
+  defaultPath: string
+  isCustom: boolean
+}
+
 export type TranslatorTask = 'idle' | 'pending' | 'converting'
 
 export type TranslatorSettings = {
@@ -65,6 +71,12 @@ contextBridge.exposeInMainWorld('scriptsApi', {
     filename: string,
     content: Record<string, unknown>,
   ): Promise<ScriptEntry> => ipcRenderer.invoke('scripts:write', filename, content),
+  getDir: (): Promise<ScriptsDirInfo> => ipcRenderer.invoke('scripts:getDir'),
+  setDir: (folderPath: string): Promise<ScriptsDirInfo> =>
+    ipcRenderer.invoke('scripts:setDir', folderPath),
+  resetDir: (): Promise<ScriptsDirInfo> => ipcRenderer.invoke('scripts:resetDir'),
+  chooseDir: (): Promise<ScriptsDirInfo | null> =>
+    ipcRenderer.invoke('scripts:chooseDir'),
   getRunnerStatus: (): Promise<ScriptRunnerStatus> =>
     ipcRenderer.invoke('scripts:runner-getStatus'),
   setActive: (filename: string | null): Promise<ScriptRunnerStatus> =>
@@ -161,6 +173,7 @@ export type AppConfig = {
   scripts: {
     schemaVersion: 1
     scriptFavorites: string[]
+    folderPath: string | null
   }
   translation: {
     enabled: boolean

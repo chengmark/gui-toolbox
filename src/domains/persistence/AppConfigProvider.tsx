@@ -51,6 +51,10 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
           schemaVersion: 1,
           scriptFavorites:
             patch.scripts?.scriptFavorites ?? current.scripts.scriptFavorites,
+          folderPath:
+            patch.scripts?.folderPath === undefined
+              ? current.scripts.folderPath
+              : patch.scripts.folderPath,
         },
         translation: { ...current.translation, ...patch.translation },
         updates: { ...current.updates, ...patch.updates },

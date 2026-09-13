@@ -29,6 +29,7 @@ import {
 } from './keybinds'
 import { registerAppConfigIpc, loadAppConfig } from './app-config'
 import { destroyAppToast } from './app-toast'
+import { registerScriptsDirIpc } from './scripts-dir'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -157,10 +158,11 @@ app.whenReady().then(() => {
   registerScriptRunnerIpc(ipcMain)
   registerKeybindsIpc(ipcMain)
   registerAppConfigIpc(ipcMain)
+  registerScriptsDirIpc(ipcMain)
   registerUpdaterIpc()
-  void loadAppConfig()
-
-  createWindow()
+  void loadAppConfig().then(() => {
+    createWindow()
+  })
 })
 
 app.on('window-all-closed', () => {

@@ -59,6 +59,24 @@ export function useScriptsCatalog() {
     setRunnerError(status.error)
   }, [])
 
+  const reload = useCallback(async () => {
+    try {
+      setLoading(true)
+      setLoadError(null)
+      setRowErrors({})
+      const [entries, status] = await Promise.all([
+        window.scriptsApi.list(),
+        window.scriptsApi.getRunnerStatus(),
+      ])
+      setScripts(entries.map(entryToItem))
+      applyRunnerStatus(status)
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : "Failed to load scripts")
+    } finally {
+      setLoading(false)
+    }
+  }, [applyRunnerStatus])
+
   useEffect(() => {
     let cancelled = false
 
@@ -295,6 +313,7 @@ export function useScriptsCatalog() {
     pendingDelete,
     deleting,
     runnerError,
+    reload,
     updateName,
     applySavedScript,
     rename,

@@ -450,6 +450,10 @@ export function stopKeybinds(): void {
   keybinds.stop()
 }
 
+export async function refreshKeybindScripts(): Promise<KeybindsState> {
+  return keybinds.refreshScripts()
+}
+
 export function registerKeybindsIpc(ipcMain: IpcMain): void {
   ipcMain.handle('keybinds:getState', async () => keybinds.getState())
   ipcMain.handle('keybinds:refreshScripts', async () =>

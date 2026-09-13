@@ -328,6 +328,10 @@ export function stopScriptRunner(): void {
   runner.stop()
 }
 
+export async function unloadScriptRunner(): Promise<RunnerStatus> {
+  return runner.unload()
+}
+
 export function registerScriptRunnerIpc(ipcMain: IpcMain): void {
   ipcMain.handle('scripts:runner-getStatus', () => runner.getStatus())
   ipcMain.handle('scripts:runner-setActive', async (_event, filename: string | null) =>
