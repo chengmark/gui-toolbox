@@ -4,6 +4,7 @@ import { ScriptsView } from "@/domains/scripts"
 import { TranslatorView } from "@/domains/translator"
 import { KeybindsView } from "@/domains/keybinds"
 import { SettingsView } from "@/domains/settings"
+import { AppUpdater } from "@/domains/updater"
 
 function renderPage(tab: AppTab) {
   switch (tab) {
@@ -22,8 +23,11 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<AppTab>("scripts")
 
   return (
-    <AppShell activeTab={activeTab} onTabChange={setActiveTab}>
-      {renderPage(activeTab)}
-    </AppShell>
+    <>
+      <AppShell activeTab={activeTab} onTabChange={setActiveTab}>
+        {renderPage(activeTab)}
+      </AppShell>
+      <AppUpdater />
+    </>
   )
 }

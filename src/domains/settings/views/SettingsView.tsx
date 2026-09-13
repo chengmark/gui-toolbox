@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { FolderOpen, RotateCcw } from "lucide-react"
 import { PageHeader } from "@/shared"
 import { useAppConfig } from "@/domains/persistence"
+import { useUpdater } from "@/domains/updater"
 import { useI18n, LOCALE_OPTIONS, type Locale } from "@/shared/i18n"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
@@ -23,6 +24,7 @@ type PathInfo = {
 export function SettingsView() {
   const { t, locale, setLocale } = useI18n()
   const { reload } = useAppConfig()
+  const updater = useUpdater()
   const [pathInfo, setPathInfo] = useState<PathInfo | null>(null)
   const [draftPath, setDraftPath] = useState("")
   const [pathBusy, setPathBusy] = useState(false)
@@ -95,6 +97,35 @@ export function SettingsView() {
   }
 
   const pathDirty = pathInfo != null && draftPath.trim() !== pathInfo.filePath
+  const latestLabel = updater.info.latestVersion || t("settings.updatesUnknown")
+  const currentLabel = updater.info.currentVersion || t("settings.updatesUnknown")
+  const canUpdate =
+    (updater.info.status === "available" || updater.info.status === "skipped") &&
+    Boolean(updater.info.latestVersion) &&
+    !updater.promptOpen
+
+  const statusText = (() => {
+    switch (updater.info.status) {
+      case "checking":
+        return t("settings.updatesStatusChecking")
+      case "up-to-date":
+        return t("settings.updatesStatusUpToDate")
+      case "available":
+        return t("settings.updatesStatusAvailable")
+      case "skipped":
+        return t("settings.updatesStatusSkipped", {
+          version: updater.info.latestVersion || "",
+        })
+      case "error":
+        return updater.info.message || t("settings.updatesStatusError")
+      case "unsupported":
+        return t("settings.updatesStatusUnsupported")
+      default:
+        return updater.info.checking
+          ? t("settings.updatesStatusChecking")
+          : t("settings.updatesStatusIdle")
+    }
+  })()
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -132,6 +163,52 @@ export function SettingsView() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-xl rounded-md border border-border bg-card p-4">
+          <div className="space-y-1">
+            <h2 className="text-[13px] font-semibold text-foreground">
+              {t("settings.updatesTitle")}
+            </h2>
+            <p className="text-[12px] text-muted-foreground">
+              {t("settings.updatesDescription")}
+            </p>
+          </div>
+
+          <dl className="mt-4 grid gap-3 text-[12px] sm:grid-cols-2">
+            <div className="space-y-1">
+              <dt className="text-muted-foreground">{t("settings.updatesCurrent")}</dt>
+              <dd className="font-mono text-foreground">{currentLabel}</dd>
+            </div>
+            <div className="space-y-1">
+              <dt className="text-muted-foreground">{t("settings.updatesLatest")}</dt>
+              <dd className="font-mono text-foreground">{latestLabel}</dd>
+            </div>
+          </dl>
+
+          <p className="mt-3 text-[12px] text-muted-foreground">{statusText}</p>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              disabled={updater.info.checking || updater.prompt.phase === "downloading"}
+              onClick={() => void updater.checkNow()}
+            >
+              {updater.info.checking
+                ? t("settings.updatesStatusChecking")
+                : t("settings.updatesCheck")}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={!canUpdate || updater.info.checking}
+              onClick={() => updater.openUpdatePrompt()}
+            >
+              {t("settings.updatesUpdate")}
+            </Button>
           </div>
         </section>
 

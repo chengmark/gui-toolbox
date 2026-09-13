@@ -24,12 +24,17 @@ export type AppConfig = {
   translation: {
     enabled: boolean
   }
+  updates: {
+    /** Semver the user chose to skip; startup won't prompt for this version again. */
+    skippedVersion: string | null
+  }
 }
 
 export type AppConfigPatch = {
   common?: Partial<AppConfig['common']>
   scripts?: Partial<AppConfig['scripts']>
   translation?: Partial<AppConfig['translation']>
+  updates?: Partial<AppConfig['updates']>
 }
 
 export type AppSettingsPathInfo = {
@@ -44,6 +49,7 @@ const DEFAULT_CONFIG: AppConfig = {
   common: { locale: null },
   scripts: { schemaVersion: 1, scriptFavorites: [] },
   translation: { enabled: false },
+  updates: { skippedVersion: null },
 }
 
 function isLocale(value: unknown): value is AppConfigLocale {
@@ -87,6 +93,7 @@ function normalizeConfig(raw: unknown): AppConfig {
         scriptFavorites: normalizeFavorites(data.scriptFavorites),
       },
       translation: { enabled: DEFAULT_CONFIG.translation.enabled },
+      updates: { skippedVersion: null },
     }
   }
 
@@ -101,6 +108,10 @@ function normalizeConfig(raw: unknown): AppConfig {
   const translation =
     data.translation && typeof data.translation === 'object'
       ? (data.translation as Record<string, unknown>)
+      : {}
+  const updates =
+    data.updates && typeof data.updates === 'object'
+      ? (data.updates as Record<string, unknown>)
       : {}
 
   return {
@@ -117,6 +128,13 @@ function normalizeConfig(raw: unknown): AppConfig {
           ? translation.enabled
           : DEFAULT_CONFIG.translation.enabled,
     },
+    updates: {
+      skippedVersion:
+        typeof updates.skippedVersion === 'string' &&
+        updates.skippedVersion.length > 0
+          ? updates.skippedVersion
+          : null,
+    },
   }
 }
 
@@ -127,6 +145,7 @@ function needsRewrite(raw: unknown): boolean {
   if (!('common' in data) || !('scripts' in data) || !('translation' in data)) {
     return true
   }
+  if (!('updates' in data)) return true
   return false
 }
 
@@ -293,6 +312,15 @@ export async function patchAppConfig(patch: AppConfigPatch): Promise<AppConfig> 
         patch.translation?.enabled === undefined
           ? current.translation.enabled
           : Boolean(patch.translation.enabled),
+    },
+    updates: {
+      skippedVersion:
+        patch.updates?.skippedVersion === undefined
+          ? current.updates.skippedVersion
+          : patch.updates.skippedVersion === null ||
+              patch.updates.skippedVersion === ''
+            ? null
+            : String(patch.updates.skippedVersion),
     },
   }
 

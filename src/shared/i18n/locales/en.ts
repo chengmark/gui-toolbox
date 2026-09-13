@@ -45,6 +45,21 @@ export const en = {
     pathCustomHint: "Custom location. Default is {path}.",
     pathEmpty: "Enter a .json file path.",
     pathError: "Could not update the settings path.",
+    updatesTitle: "Updates",
+    updatesDescription:
+      "See the installed and latest app versions. Check manually anytime.",
+    updatesCurrent: "Current version",
+    updatesLatest: "Latest version",
+    updatesStatusIdle: "Not checked yet.",
+    updatesStatusChecking: "Checking for updates…",
+    updatesStatusUpToDate: "You are on the latest version.",
+    updatesStatusAvailable: "A newer version is available.",
+    updatesStatusSkipped: "You skipped version {version}.",
+    updatesStatusError: "Could not check for updates.",
+    updatesStatusUnsupported: "Update checks require a packaged build.",
+    updatesUnknown: "—",
+    updatesCheck: "Check for updates",
+    updatesUpdate: "Update now",
   },
   scripts: {
     title: "Scripts",
@@ -167,6 +182,23 @@ export const en = {
   },
   placeholder: {
     comingSoon: "{title} page — coming soon",
+  },
+  updater: {
+    availableTitle: "Update available",
+    availableBody:
+      "Version {latest} is available (you have {current}). Update now?",
+    downloadingBody: "Downloading update… {percent}%",
+    downloading: "Downloading…",
+    readyTitle: "Update ready",
+    readyBody: "Version {version} has been downloaded. Restart to install.",
+    errorTitle: "Update failed",
+    errorBody: "{message}",
+    unknownError: "Something went wrong while updating.",
+    later: "Later",
+    skipVersion: "Skip this version",
+    update: "Update",
+    retry: "Retry",
+    restart: "Restart to install",
   },
 } as const
 

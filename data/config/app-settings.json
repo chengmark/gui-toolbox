@@ -10,5 +10,8 @@
   },
   "translation": {
     "enabled": true
+  },
+  "updates": {
+    "skippedVersion": null
   }
 }

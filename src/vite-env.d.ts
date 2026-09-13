@@ -63,12 +63,16 @@ type AppConfig = {
   translation: {
     enabled: boolean
   }
+  updates: {
+    skippedVersion: string | null
+  }
 }
 
 type AppConfigPatch = {
   common?: Partial<AppConfig["common"]>
   scripts?: Partial<AppConfig["scripts"]>
   translation?: Partial<AppConfig["translation"]>
+  updates?: Partial<AppConfig["updates"]>
 }
 
 type AppSettingsPathInfo = {
@@ -77,6 +81,35 @@ type AppSettingsPathInfo = {
   isCustom: boolean
   configDir: string
   packaged: boolean
+}
+
+type UpdaterCheckResult =
+  | {
+      status: "available"
+      currentVersion: string
+      newVersion: string
+    }
+  | {
+      status: "not-available"
+      currentVersion: string
+      newVersion?: string
+    }
+  | {
+      status: "skipped"
+      currentVersion: string
+      message: string
+    }
+  | {
+      status: "error"
+      currentVersion: string
+      message: string
+    }
+
+type UpdaterProgress = {
+  percent: number
+  bytesPerSecond: number
+  transferred: number
+  total: number
 }
 
 interface Window {
@@ -117,5 +150,15 @@ interface Window {
     setPath: (filePath: string) => Promise<AppSettingsPathInfo>
     resetPath: () => Promise<AppSettingsPathInfo>
     choosePath: () => Promise<AppSettingsPathInfo | null>
+  }
+  updaterApi: {
+    getVersion: () => Promise<string>
+    check: () => Promise<UpdaterCheckResult>
+    download: () => Promise<{ started: boolean }>
+    cancelDownload: () => Promise<void>
+    install: () => Promise<void>
+    onProgress: (listener: (progress: UpdaterProgress) => void) => () => void
+    onDownloaded: (listener: () => void) => () => void
+    onError: (listener: (payload: { message: string }) => void) => () => void
   }
 }

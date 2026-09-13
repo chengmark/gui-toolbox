@@ -165,12 +165,16 @@ export type AppConfig = {
   translation: {
     enabled: boolean
   }
+  updates: {
+    skippedVersion: string | null
+  }
 }
 
 export type AppConfigPatch = {
   common?: Partial<AppConfig['common']>
   scripts?: Partial<AppConfig['scripts']>
   translation?: Partial<AppConfig['translation']>
+  updates?: Partial<AppConfig['updates']>
 }
 
 export type AppSettingsPathInfo = {
@@ -193,6 +197,78 @@ contextBridge.exposeInMainWorld('appConfigApi', {
     ipcRenderer.invoke('appConfig:resetPath'),
   choosePath: (): Promise<AppSettingsPathInfo | null> =>
     ipcRenderer.invoke('appConfig:choosePath'),
+})
+
+export type UpdaterCheckResult =
+  | {
+      status: 'available'
+      currentVersion: string
+      newVersion: string
+    }
+  | {
+      status: 'not-available'
+      currentVersion: string
+      newVersion?: string
+    }
+  | {
+      status: 'skipped'
+      currentVersion: string
+      message: string
+    }
+  | {
+      status: 'error'
+      currentVersion: string
+      message: string
+    }
+
+export type UpdaterProgress = {
+  percent: number
+  bytesPerSecond: number
+  transferred: number
+  total: number
+}
+
+contextBridge.exposeInMainWorld('updaterApi', {
+  getVersion: (): Promise<string> => ipcRenderer.invoke('updater:get-version'),
+  check: (): Promise<UpdaterCheckResult> => ipcRenderer.invoke('updater:check'),
+  download: (): Promise<{ started: boolean }> =>
+    ipcRenderer.invoke('updater:download'),
+  cancelDownload: (): Promise<void> =>
+    ipcRenderer.invoke('updater:cancel-download'),
+  install: (): Promise<void> => ipcRenderer.invoke('updater:install'),
+  onProgress: (listener: (progress: UpdaterProgress) => void) => {
+    const handler = (
+      _event: Electron.IpcRendererEvent,
+      progress: UpdaterProgress,
+    ) => {
+      listener(progress)
+    }
+    ipcRenderer.on('updater:progress', handler)
+    return () => {
+      ipcRenderer.off('updater:progress', handler)
+    }
+  },
+  onDownloaded: (listener: () => void) => {
+    const handler = () => {
+      listener()
+    }
+    ipcRenderer.on('updater:downloaded', handler)
+    return () => {
+      ipcRenderer.off('updater:downloaded', handler)
+    }
+  },
+  onError: (listener: (payload: { message: string }) => void) => {
+    const handler = (
+      _event: Electron.IpcRendererEvent,
+      payload: { message: string },
+    ) => {
+      listener(payload)
+    }
+    ipcRenderer.on('updater:error', handler)
+    return () => {
+      ipcRenderer.off('updater:error', handler)
+    }
+  },
 })
 
 function domReady(condition: DocumentReadyState[] = ['complete', 'interactive']) {
