@@ -2,80 +2,130 @@ import { app, ipcMain } from 'electron'
 import type {
   ProgressInfo,
   UpdateDownloadedEvent,
-  UpdateInfo,
 } from 'electron-updater'
-// Pure cjs module does not support named exports, so we need to import the default export and access the autoUpdater property
 import updater from 'electron-updater'
 
 const autoUpdater = updater.autoUpdater
+
 let cancellationToken = new updater.CancellationToken()
 let isDownloading = false
+let handlersRegistered = false
 
-export function update(win: Electron.BrowserWindow) {
+export type UpdaterCheckResult =
+  | {
+      status: 'available'
+      currentVersion: string
+      newVersion: string
+    }
+  | {
+      status: 'not-available'
+      currentVersion: string
+      newVersion?: string
+    }
+  | {
+      status: 'skipped'
+      currentVersion: string
+      message: string
+    }
+  | {
+      status: 'error'
+      currentVersion: string
+      message: string
+    }
 
-  // When set to false, the update download will be triggered through the API
+export type UpdaterProgress = {
+  percent: number
+  bytesPerSecond: number
+  transferred: number
+  total: number
+}
+
+export function registerUpdaterIpc() {
+  if (handlersRegistered) return
+  handlersRegistered = true
+
   autoUpdater.autoDownload = false
+  autoUpdater.autoInstallOnAppQuit = true
   autoUpdater.disableWebInstaller = false
   autoUpdater.allowDowngrade = false
 
-  // start check
-  autoUpdater.on('checking-for-update', function () { })
-  // update available
-  autoUpdater.on('update-available', (arg: UpdateInfo) => {
-    win.webContents.send('update-can-available', { update: true, version: app.getVersion(), newVersion: arg?.version })
-  })
-  // update not available
-  autoUpdater.on('update-not-available', (arg: UpdateInfo) => {
-    win.webContents.send('update-can-available', { update: false, version: app.getVersion(), newVersion: arg?.version })
-  })
+  try {
+    autoUpdater.setFeedURL({
+      provider: 'github',
+      owner: 'chengmark',
+      repo: 'gui-toolbox',
+    })
+  } catch {
+    // Feed URL may already be configured via electron-builder publish config.
+  }
 
-  // Checking for updates
-  ipcMain.handle('check-update', async () => {
+  ipcMain.handle('updater:check', async (): Promise<UpdaterCheckResult> => {
+    const currentVersion = app.getVersion()
+
     if (!app.isPackaged) {
-      const error = new Error('The update feature is only available after the package.')
-      return { message: error.message, error }
+      return {
+        status: 'skipped',
+        currentVersion,
+        message: 'Updates are only available in packaged builds.',
+      }
     }
 
     try {
-      return await autoUpdater.checkForUpdates()
+      const result = await autoUpdater.checkForUpdates()
+      if (!result?.updateInfo) {
+        return { status: 'not-available', currentVersion }
+      }
+
+      const newVersion = result.updateInfo.version
+      if (result.isUpdateAvailable) {
+        return { status: 'available', currentVersion, newVersion }
+      }
+
+      return { status: 'not-available', currentVersion, newVersion }
     } catch (error) {
-      const resolvedError = error instanceof Error ? error : new Error('Network error')
-      return { message: resolvedError.message, error: resolvedError }
+      const message =
+        error instanceof Error ? error.message : 'Failed to check for updates'
+      return { status: 'error', currentVersion, message }
     }
   })
 
-  // Start downloading and feedback on progress
-  ipcMain.handle('start-download', (event: Electron.IpcMainInvokeEvent) => {
-    if (isDownloading) return
-
+  ipcMain.handle('updater:download', (event) => {
+    if (isDownloading) return { started: false as const }
     isDownloading = true
+
     startDownload(
       (error, progressInfo) => {
         if (error) {
           isDownloading = false
-          // feedback download error message
-          event.sender.send('update-error', { message: error.message, error })
-        } else {
-          // feedback update progress message
-          event.sender.send('download-progress', progressInfo)
+          event.sender.send('updater:error', { message: error.message })
+          return
+        }
+        if (progressInfo) {
+          event.sender.send('updater:progress', {
+            percent: progressInfo.percent,
+            bytesPerSecond: progressInfo.bytesPerSecond,
+            transferred: progressInfo.transferred,
+            total: progressInfo.total,
+          } satisfies UpdaterProgress)
         }
       },
       () => {
         isDownloading = false
-        // feedback update downloaded message
-        event.sender.send('update-downloaded')
-      }
+        event.sender.send('updater:downloaded')
+      },
     )
+
+    return { started: true as const }
   })
 
-  // Cancel downloading
-  ipcMain.handle('cancel-download', () => {
+  ipcMain.handle('updater:cancel-download', () => {
+    if (!isDownloading) return
     cancellationToken.cancel()
-    cancellationToken = new updater.CancellationToken();
+    cancellationToken = new updater.CancellationToken()
+    isDownloading = false
   })
 
-  // Install now
-  ipcMain.handle('quit-and-install', () => {
+  ipcMain.handle('updater:install', () => {
     autoUpdater.quitAndInstall(false, true)
   })
 }
@@ -103,5 +153,5 @@ function startDownload(
   autoUpdater.on('download-progress', onDownloadProgress)
   autoUpdater.on('error', onError)
   autoUpdater.once('update-downloaded', onDownloaded)
-  autoUpdater.downloadUpdate(cancellationToken)
+  void autoUpdater.downloadUpdate(cancellationToken)
 }

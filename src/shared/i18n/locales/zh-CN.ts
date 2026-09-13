@@ -160,4 +160,19 @@ export const zhCN: MessageCatalog = {
   placeholder: {
     comingSoon: "{title} 页面 — 即将推出",
   },
+  updater: {
+    availableTitle: "发现新版本",
+    availableBody: "有新版本 {latest}（当前为 {current}）。是否现在更新？",
+    downloadingBody: "正在下载更新… {percent}%",
+    downloading: "下载中…",
+    readyTitle: "更新已就绪",
+    readyBody: "版本 {version} 已下载完成，重启以安装。",
+    errorTitle: "更新失败",
+    errorBody: "{message}",
+    unknownError: "更新时出现问题。",
+    later: "稍后",
+    update: "更新",
+    retry: "重试",
+    restart: "重启并安装",
+  },
 }

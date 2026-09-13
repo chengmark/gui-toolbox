@@ -160,4 +160,19 @@ export const zhTW: MessageCatalog = {
   placeholder: {
     comingSoon: "{title} 頁面 — 即將推出",
   },
+  updater: {
+    availableTitle: "發現新版本",
+    availableBody: "有新版本 {latest}（目前為 {current}）。是否現在更新？",
+    downloadingBody: "正在下載更新… {percent}%",
+    downloading: "下載中…",
+    readyTitle: "更新已就緒",
+    readyBody: "版本 {version} 已下載完成，重新啟動以安裝。",
+    errorTitle: "更新失敗",
+    errorBody: "{message}",
+    unknownError: "更新時發生問題。",
+    later: "稍後",
+    update: "更新",
+    retry: "重試",
+    restart: "重新啟動並安裝",
+  },
 }

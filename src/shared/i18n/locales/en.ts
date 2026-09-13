@@ -168,6 +168,22 @@ export const en = {
   placeholder: {
     comingSoon: "{title} page — coming soon",
   },
+  updater: {
+    availableTitle: "Update available",
+    availableBody:
+      "Version {latest} is available (you have {current}). Update now?",
+    downloadingBody: "Downloading update… {percent}%",
+    downloading: "Downloading…",
+    readyTitle: "Update ready",
+    readyBody: "Version {version} has been downloaded. Restart to install.",
+    errorTitle: "Update failed",
+    errorBody: "{message}",
+    unknownError: "Something went wrong while updating.",
+    later: "Later",
+    update: "Update",
+    retry: "Retry",
+    restart: "Restart to install",
+  },
 } as const
 
 export type MessageCatalog = {
