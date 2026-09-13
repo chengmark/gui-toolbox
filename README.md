@@ -42,7 +42,13 @@ Packaged builds keep writable config under Electron `userData/config/`.
 
 ## Releases
 
-Merging a PR into `main` runs GitHub Actions (`.github/workflows/release.yml`), which builds the Windows NSIS installer and publishes a GitHub Release for the `version` in `package.json`. Bump that version in the PR when you want a new release tag.
+Merging a PR into `main` runs GitHub Actions (`.github/workflows/release.yml`), which:
+
+1. Auto-bumps the patch version in `package.json` (e.g. `0.1.0` → `0.1.1`) and commits it with `[skip ci]`
+2. Builds the Windows NSIS installer
+3. Publishes a GitHub Release for that version (used by in-app auto-update)
+
+You do not need to bump the version in feature PRs.
 
 ## Add shadcn components
 
