@@ -91,7 +91,11 @@ async function createWindow() {
   })
 
   win.once('ready-to-show', () => {
-    win?.show()
+    if (win && !win.isDestroyed()) win.show()
+  })
+
+  win.on('closed', () => {
+    win = null
   })
 
   startTranslator(win)
@@ -107,7 +111,9 @@ async function createWindow() {
 
   // Test actively push message to the Electron-Renderer
   win.webContents.on('did-finish-load', () => {
-    win?.webContents.send('main-process-message', new Date().toLocaleString())
+    if (win && !win.isDestroyed()) {
+      win.webContents.send('main-process-message', new Date().toLocaleString())
+    }
   })
 
   // Make all links open with the browser, not with the application
@@ -167,19 +173,21 @@ app.on('window-all-closed', () => {
 })
 
 app.on('second-instance', () => {
-  if (win) {
+  if (win && !win.isDestroyed()) {
     // Focus on the main window if the user tried to open another
     if (win.isMinimized()) win.restore()
     win.focus()
+    return
   }
+  void createWindow()
 })
 
 app.on('activate', () => {
-  const allWindows = BrowserWindow.getAllWindows()
+  const allWindows = BrowserWindow.getAllWindows().filter((w) => !w.isDestroyed())
   if (allWindows.length) {
     allWindows[0].focus()
   } else {
-    createWindow()
+    void createWindow()
   }
 })
 

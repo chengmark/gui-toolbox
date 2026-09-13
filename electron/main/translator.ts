@@ -276,7 +276,7 @@ class TranslatorService {
       // ignore shutdown errors
     }
     this.task = 'idle'
-    this.emit()
+    this.win = null
   }
 
   getStatus(): TranslatorStatus {
@@ -339,7 +339,9 @@ class TranslatorService {
   }
 
   private emit(): void {
-    this.win?.webContents.send('translator:status', this.getStatus())
+    if (this.win && !this.win.isDestroyed()) {
+      this.win.webContents.send('translator:status', this.getStatus())
+    }
   }
 
   private readClipboard(): string {
