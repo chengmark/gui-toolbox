@@ -4,7 +4,8 @@
   },
   "scripts": {
     "schemaVersion": 1,
-    "scriptFavorites": []
+    "scriptFavorites": [],
+    "folderPath": null
   },
   "translation": {
     "enabled": false

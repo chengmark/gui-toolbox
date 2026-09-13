@@ -7,6 +7,7 @@ export type AppConfig = {
   scripts: {
     schemaVersion: 1
     scriptFavorites: string[]
+    folderPath: string | null
   }
   translation: {
     enabled: boolean
@@ -25,7 +26,7 @@ export type AppConfigPatch = {
 
 export const DEFAULT_APP_CONFIG: AppConfig = {
   common: { locale: null },
-  scripts: { schemaVersion: 1, scriptFavorites: [] },
+  scripts: { schemaVersion: 1, scriptFavorites: [], folderPath: null },
   translation: { enabled: false },
   updates: { skippedVersion: null },
 }

@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react"
 import { PageHeader } from "@/shared"
 import { useI18n } from "@/shared/i18n"
 import { DeleteScriptDialog } from "@/domains/scripts/components/DeleteScriptDialog"
+import { ScriptsFolderBar } from "@/domains/scripts/components/ScriptsFolderBar"
 import {
   ScriptRow,
   type ScriptRunState,
@@ -134,6 +135,8 @@ export function ScriptsView() {
           opening ? t("scripts.opening") : t("scripts.description")
         }
       />
+
+      <ScriptsFolderBar onFolderChanged={() => catalog.reload()} />
 
       <div className="flex min-h-0 flex-1 flex-col">
         {catalog.loading ? (

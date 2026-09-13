@@ -15,6 +15,12 @@ type ScriptRunnerStatus = {
   lastMessage: string | null
 }
 
+type ScriptsDirInfo = {
+  folderPath: string
+  defaultPath: string
+  isCustom: boolean
+}
+
 type TranslatorTask = "idle" | "pending" | "converting"
 
 type TranslatorSettings = {
@@ -59,6 +65,7 @@ type AppConfig = {
   scripts: {
     schemaVersion: 1
     scriptFavorites: string[]
+    folderPath: string | null
   }
   translation: {
     enabled: boolean
@@ -121,6 +128,10 @@ interface Window {
     delete: (filename: string) => Promise<void>
     read: (filename: string) => Promise<{ filename: string; content: Record<string, unknown> }>
     write: (filename: string, content: Record<string, unknown>) => Promise<ScriptEntry>
+    getDir: () => Promise<ScriptsDirInfo>
+    setDir: (folderPath: string) => Promise<ScriptsDirInfo>
+    resetDir: () => Promise<ScriptsDirInfo>
+    chooseDir: () => Promise<ScriptsDirInfo | null>
     getRunnerStatus: () => Promise<ScriptRunnerStatus>
     setActive: (filename: string | null) => Promise<ScriptRunnerStatus>
     toggleRunner: () => Promise<ScriptRunnerStatus>
