@@ -51,5 +51,13 @@
     "perMachine": false,
     "allowToChangeInstallationDirectory": true,
     "deleteAppDataOnUninstall": false
-  }
+  },
+  "publish": [
+    {
+      "provider": "github",
+      "owner": "chengmark",
+      "repo": "gui-toolbox",
+      "releaseType": "release"
+    }
+  ]
 }
