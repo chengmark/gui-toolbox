@@ -434,7 +434,9 @@ class KeybindsService {
   }
 
   private emit(): void {
-    this.win?.webContents.send('keybinds:state', this.getState())
+    if (this.win && !this.win.isDestroyed()) {
+      this.win.webContents.send('keybinds:state', this.getState())
+    }
   }
 }
 
