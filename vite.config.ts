@@ -64,5 +64,13 @@ export default defineConfig(({ command }) => {
       }),
     ],
     clearScreen: false,
+    server: {
+      watch: {
+        // Dev prefs (locale, favourites, keybinds, scripts) live under data/.
+        // Writing them must not trigger a Vite full reload of the renderer.
+        // ignore data directory to prevent full reload of the renderer in dev server
+        ignored: ['**/data/**'],
+      },
+    },
   }
 })
