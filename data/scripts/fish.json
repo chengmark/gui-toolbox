@@ -1,0 +1,38 @@
+{
+    "schemaVersion": 1,
+    "name": "打魚",
+    "toggle": "home",
+    "initial": [
+        {
+            "command": "Delay",
+            "args": [
+                2000
+            ]
+        }
+    ],
+    "loop": [
+        {
+            "command": "KeyPress",
+            "args": [
+                "2",
+                1
+            ]
+        },
+        {
+            "command": "Delay",
+            "args": [
+                1000
+            ]
+        }
+    ],
+    "subroutines": [
+        {
+            "kind": "process",
+            "file": "limit_download.mjs",
+            "args": [
+                11084,
+                "5 KB"
+            ]
+        }
+    ]
+}

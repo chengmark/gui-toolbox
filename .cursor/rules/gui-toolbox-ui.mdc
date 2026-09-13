@@ -1,0 +1,15 @@
+---
+description: Prefer shadcn/ui when building gui-toolbox UI
+globs: "**/*.{ts,tsx,css}"
+alwaysApply: false
+---
+
+# gui-toolbox UI
+
+When building or changing UI in `gui-toolbox`:
+
+1. **Always check shadcn first** — look under `src/shared/ui/` or add with `bunx --bun shadcn@latest add <component>` before inventing custom UI.
+2. Prefer composing shadcn primitives (`Button`, `Badge`, `Dialog`, `Input`, etc.) over one-off markup.
+3. Keep Cursor Dark theme tokens already defined in `src/index.css`; do not introduce a separate design system.
+4. Use Lucide icons (shadcn default) for actions.
+5. Follow domain-driven folders in `gui-toolbox-domains` rule.

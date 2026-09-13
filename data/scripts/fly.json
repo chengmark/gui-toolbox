@@ -1,0 +1,40 @@
+{
+    "schemaVersion": 1,
+    "name": "重置怪物 - 大輕功",
+    "toggle": "home",
+    "loop": [
+        {
+            "command": "KeyHoldAndRelease",
+            "args": [
+                "Space",
+                2.5
+            ]
+        },
+        {
+            "command": "KeyPress",
+            "args": [
+                "Space",
+                10
+            ]
+        },
+        {
+            "command": "Delay",
+            "args": [
+                4000
+            ]
+        },
+        {
+            "command": "KeyPress",
+            "args": [
+                "Q",
+                1
+            ]
+        },
+        {
+            "command": "Delay",
+            "args": [
+                2000
+            ]
+        }
+    ]
+}

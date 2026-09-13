@@ -1,0 +1,5 @@
+{
+  "copyTrigger": "ctrl+c",
+  "toggle": "delete",
+  "fieldConvert": "pagedown"
+}

@@ -1,0 +1,44 @@
+---
+description: Domain-driven folder structure for gui-toolbox
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# gui-toolbox domain structure
+
+Organize feature code by domain under `src/domains/`.
+
+## Layout
+
+```
+src/
+  app/                  # app shell wiring only
+  domains/
+    scripts/
+    translator/
+    keybinds/
+    settings/
+  shared/
+    ui/                 # shadcn components
+    components/         # reusable app UI (shell, page frame, etc.)
+    hooks/              # reusable hooks
+    lib/                # pure utilities (e.g. cn)
+    model.ts            # shared types / constants
+```
+
+## Domain folder conventions
+
+Each feature domain (`scripts`, `translator`, `keybinds`, `settings`) should contain:
+
+- `views/` — page-level UI only (compose components + hooks)
+- `components/` — domain UI pieces (display / interaction only)
+- `hooks/` — business / state / side-effect logic
+- `model.ts` — types and pure domain helpers when needed
+- `index.ts` — public exports for the domain
+
+## Rules
+
+1. Views and components must not own persistence, IPC, or catalog orchestration — put that in hooks (or plain modules called by hooks).
+2. Put reusable cross-domain UI/logic in `shared/`, not inside a feature domain.
+3. Put shadcn primitives in `shared/ui`; prefer adding via `bunx --bun shadcn@latest add`.
+4. Prefer importing from a domain’s `index.ts` when crossing domain boundaries.

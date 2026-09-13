@@ -1,0 +1,26 @@
+{
+    "schemaVersion": 1,
+    "name": "伐木 - 清河 北竹林",
+    "toggle": "home",
+    "loop": [
+        {
+            "command": "KeyPress",
+            "args": [
+                "Q",
+                1
+            ]
+        },
+        {
+            "command": "Delay",
+            "args": [
+                1000
+            ]
+        },
+        {
+            "command": "ImportScript",
+            "args": [
+                "reset.json"
+            ]
+        }
+    ]
+}

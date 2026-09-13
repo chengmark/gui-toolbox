@@ -1,0 +1,12 @@
+{
+  "common": {
+    "locale": null
+  },
+  "scripts": {
+    "schemaVersion": 1,
+    "scriptFavorites": []
+  },
+  "translation": {
+    "enabled": false
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "com.gui.toolbox",
+  "productName": "GUI Toolbox",
+  "asar": true,
+  "asarUnpack": [
+    "**/node_modules/uiohook-napi/**",
+    "**/node_modules/koffi/**"
+  ],
+  "directories": {
+    "output": "release/${version}"
+  },
+  "files": [
+    "dist-electron",
+    "dist"
+  ],
+  "extraResources": [
+    {
+      "from": "data/scripts",
+      "to": "data/scripts"
+    },
+    {
+      "from": "data/keybinds",
+      "to": "data/keybinds"
+    },
+    {
+      "from": "data/config/app-settings-default.json",
+      "to": "data/config/app-settings-default.json"
+    }
+  ],
+  "mac": {
+    "artifactName": "${productName}_${version}.${ext}",
+    "target": [
+      "dmg",
+      "zip"
+    ]
+  },
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      }
+    ],
+    "artifactName": "${productName}_${version}.${ext}"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "deleteAppDataOnUninstall": false
+  }
+}

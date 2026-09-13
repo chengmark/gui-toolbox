@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "id": "kb_next_audio_output",
+      "bind": "numpad0",
+      "script": "next_audio_output.mjs",
+      "enabled": true,
+      "label": "Next audio output"
+    }
+  ]
+}

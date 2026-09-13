@@ -1,0 +1,574 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: "Segoe UI Variable", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-titlebar: var(--titlebar);
+  --color-activity: var(--activity);
+}
+
+/* Cursor Dark–inspired tokens */
+:root {
+  --radius: 0.375rem;
+  --background: #181818;
+  --foreground: #cccccc;
+  --card: #1f1f1f;
+  --card-foreground: #cccccc;
+  --popover: #252526;
+  --popover-foreground: #cccccc;
+  --primary: #0078d4;
+  --primary-foreground: #ffffff;
+  --secondary: #2a2a2a;
+  --secondary-foreground: #cccccc;
+  --muted: #2a2a2a;
+  --muted-foreground: #8c8c8c;
+  --accent: #2a2a2a;
+  --accent-foreground: #e4e4e4;
+  --destructive: #f14c4c;
+  --success: #3fb950;
+  --border: #2b2b2b;
+  --input: #3c3c3c;
+  --ring: #0078d4;
+  --sidebar: #141414;
+  --sidebar-foreground: #cccccc;
+  --sidebar-accent: #2a2a2a;
+  --sidebar-border: #2b2b2b;
+  --titlebar: #141414;
+  --activity: #181818;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    @apply m-0 bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.4;
+    user-select: none;
+    scrollbar-width: thin;
+    scrollbar-color: #424242 transparent;
+  }
+
+  button {
+    @apply cursor-default;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--primary) 40%, transparent);
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: #424242;
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: #4f4f4f;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+@layer utilities {
+  .app-drag {
+    -webkit-app-region: drag;
+    app-region: drag;
+  }
+
+  .app-no-drag {
+    -webkit-app-region: no-drag;
+    app-region: no-drag;
+  }
+
+  /* Cursor-like input surface */
+  .cursor-input {
+    width: auto;
+    field-sizing: content;
+    min-width: 3ch;
+    border: 1px solid #3c3c3c;
+    border-radius: 2px;
+    background: #3c3c3c;
+    color: #cccccc;
+    outline: none;
+    box-shadow: none;
+    user-select: text;
+    line-height: 1;
+  }
+
+  .cursor-input:focus {
+    border-color: #0078d4;
+    outline: 1px solid #0078d4;
+    outline-offset: -1px;
+  }
+
+  /* Cursor-like scrollbars */
+  .cursor-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #424242 transparent;
+  }
+
+  .cursor-scroll::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  .cursor-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .cursor-scroll::-webkit-scrollbar-thumb {
+    background: #424242;
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+  }
+
+  .cursor-scroll::-webkit-scrollbar-thumb:hover {
+    background: #4f4f4f;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .cursor-scroll::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+@keyframes view-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes view-swipe-in {
+  from {
+    opacity: 0;
+    transform: translate3d(24px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.view-fade-in {
+  animation: view-fade-in 180ms ease-out both;
+}
+
+.view-swipe-in {
+  animation: view-swipe-in 220ms ease-out both;
+}
+
+/* Section stack in script editor — avoid relying on Tailwind space/gap utilities */
+.editor-section-stack > * + * {
+  margin-top: 48px;
+}
+
+/* Script catalog — hover lightens; depths differ by component */
+.script-row {
+  transition: background-color 150ms ease;
+}
+
+.script-row:hover {
+  /* Row surface: lift above table (#141414 / #181818) */
+  background-color: #2f2f2f;
+}
+
+.script-row:hover td {
+  color: #e8e8e8;
+}
+
+/* Idle badge sits darker than lifted row so it still reads */
+.script-row:hover [data-slot="badge"][data-variant="secondary"] {
+  background-color: #1f1f1f;
+  border-color: #4a4a4a;
+  color: #c8c8c8;
+}
+
+.script-row:hover [data-slot="badge"][data-variant="success"] {
+  background-color: rgba(63, 185, 80, 0.28);
+}
+
+.script-row .script-row-action {
+  color: #8c8c8c;
+  border-radius: 6px;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.script-row .script-row-action:hover {
+  /* Actions: brighter lift than the row */
+  background-color: #3f3f3f;
+  color: #f0f0f0;
+}
+
+.script-row .script-row-action.is-active {
+  color: #3fb950;
+}
+
+.script-row .script-row-action.is-active:hover {
+  background-color: rgba(63, 185, 80, 0.28);
+  color: #56d364;
+}
+
+.script-row .script-row-action.is-favorite {
+  color: #e3b341;
+}
+
+.script-row .script-row-action.is-favorite:hover {
+  background-color: rgba(227, 179, 65, 0.22);
+  color: #f0c14b;
+}
+
+.script-row .script-row-action.is-danger:hover {
+  background-color: rgba(241, 76, 76, 0.28);
+  color: #ff6b6b;
+}
+
+/* Step tokens — base → hover lightens; selected/invalid keep their own lifts */
+.step-token {
+  border: 2px solid #3c3c3c;
+  background-color: #1e1e1e;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.step-token:hover {
+  border-color: #6a6a6a;
+  background-color: #2c2c2c;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.step-token.is-selected {
+  border-color: #0078d4;
+  background-color: #16324a;
+  box-shadow: 0 0 0 1px #0078d4;
+}
+
+.step-token.is-selected:hover {
+  border-color: #3a9ee8;
+  background-color: #1f4466;
+}
+
+.step-token.is-invalid {
+  border-color: #f14c4c;
+  background-color: #2a1818;
+}
+
+.step-token.is-invalid:hover {
+  border-color: #ff7a7a;
+  background-color: #3a2222;
+}
+
+.step-token-add {
+  border: 2px dashed #3c3c3c;
+  background-color: #1a1a1a;
+  color: rgba(255, 255, 255, 0.7);
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
+}
+
+.step-token-add:hover {
+  border-color: #3a9ee8;
+  background-color: #24384c;
+  color: #7ec4f5;
+  transform: translateY(-1px);
+}
+
+.step-flow-arrow {
+  display: inline-flex;
+  height: 132px;
+  width: 22px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  color: #6e6e6e;
+}
+
+.step-flow-unit:hover .step-flow-arrow {
+  color: #a0a0a0;
+}
+
+/* Editor back button — lighten on hover */
+.editor-back-btn {
+  background-color: #222222;
+  color: #cccccc;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.editor-back-btn:hover:not(:disabled) {
+  background-color: #3a3a3a;
+  color: #ffffff;
+}
+
+.editor-back-btn:disabled {
+  opacity: 0.45;
+}
+
+/* Collapsible editor sections — solid surfaces vs page #121212 */
+.editor-section {
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid #3a3a3a;
+  background-color: #1e1e1e;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.editor-section--profile {
+  border-color: #454545;
+  background-color: #1e1e1e;
+}
+
+.editor-section--initial {
+  border-color: #2d6b4f;
+  background-color: #1a2a22;
+}
+
+.editor-section--loop {
+  border-color: #2d5f86;
+  background-color: #1a2430;
+}
+
+.editor-section--background {
+  border-color: #5a4580;
+  background-color: #221a2c;
+}
+
+.editor-section--subroutines {
+  border-color: #8a6a3a;
+  background-color: #2a2218;
+}
+
+.editor-section-header-row {
+  display: flex;
+  width: 100%;
+  align-items: stretch;
+}
+
+.editor-section-header {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 0;
+  background-color: #262626;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 150ms ease;
+}
+
+.editor-section-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 16px 14px 0;
+  background-color: #262626;
+  transition: background-color 150ms ease;
+}
+
+.editor-section--profile .editor-section-header,
+.editor-section--profile .editor-section-actions {
+  background-color: #262626;
+}
+
+.editor-section--initial .editor-section-header,
+.editor-section--initial .editor-section-actions {
+  background-color: #20382c;
+}
+
+.editor-section--loop .editor-section-header,
+.editor-section--loop .editor-section-actions {
+  background-color: #203448;
+}
+
+.editor-section--background .editor-section-header,
+.editor-section--background .editor-section-actions {
+  background-color: #2c2438;
+}
+
+.editor-section--subroutines .editor-section-header,
+.editor-section--subroutines .editor-section-actions {
+  background-color: #38301f;
+}
+
+/* Header hover: lighten to show collapse/expand is interactive */
+.editor-section-header:hover:not(.is-static),
+.editor-section-header-row:has(.editor-section-header:hover:not(.is-static))
+  .editor-section-actions {
+  background-color: #333333;
+}
+
+.editor-section--initial
+  .editor-section-header:hover:not(.is-static),
+.editor-section--initial
+  .editor-section-header-row:has(.editor-section-header:hover:not(.is-static))
+  .editor-section-actions {
+  background-color: #2a4a3a;
+}
+
+.editor-section--loop .editor-section-header:hover:not(.is-static),
+.editor-section--loop
+  .editor-section-header-row:has(.editor-section-header:hover:not(.is-static))
+  .editor-section-actions {
+  background-color: #2a4460;
+}
+
+.editor-section--background .editor-section-header:hover:not(.is-static),
+.editor-section--background
+  .editor-section-header-row:has(.editor-section-header:hover:not(.is-static))
+  .editor-section-actions {
+  background-color: #3a3250;
+}
+
+.editor-section--subroutines .editor-section-header:hover:not(.is-static),
+.editor-section--subroutines
+  .editor-section-header-row:has(.editor-section-header:hover:not(.is-static))
+  .editor-section-actions {
+  background-color: #4a3e28;
+}
+
+.editor-section-header.is-static {
+  cursor: default;
+}
+
+.editor-section-accent {
+  margin-top: 2px;
+  height: 32px;
+  width: 4px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background-color: #8c8c8c;
+}
+
+.editor-section--initial .editor-section-accent {
+  background-color: #3fb950;
+}
+
+.editor-section--loop .editor-section-accent {
+  background-color: #4da3e8;
+}
+
+.editor-section--background .editor-section-accent {
+  background-color: #a78bfa;
+}
+
+.editor-section--subroutines .editor-section-accent {
+  background-color: #e3b341;
+}
+
+.editor-section-chevron {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background-color: rgba(0, 0, 0, 0.28);
+  color: #b0b0b0;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.editor-section-header:hover:not(.is-static) .editor-section-chevron {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.editor-section-body {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px;
+  background-color: #161616;
+}
+
+.editor-section--initial .editor-section-body {
+  background-color: #121c17;
+  border-top-color: rgba(63, 185, 80, 0.25);
+}
+
+.editor-section--loop .editor-section-body {
+  background-color: #121820;
+  border-top-color: rgba(77, 163, 232, 0.25);
+}
+
+.editor-section--background .editor-section-body {
+  background-color: #16121c;
+  border-top-color: rgba(167, 139, 250, 0.25);
+}
+
+.editor-section--subroutines .editor-section-body {
+  background-color: #1a1610;
+  border-top-color: rgba(227, 179, 65, 0.25);
+}

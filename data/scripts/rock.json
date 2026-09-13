@@ -1,0 +1,54 @@
+{
+    "schemaVersion": 1,
+    "name": "rock",
+    "toggle": "home",
+    "loop": [
+        {
+            "command": "KeyPress",
+            "args": [
+                "F",
+                25,
+                100
+            ]
+        },
+        {
+            "command": "Delay",
+            "args": [
+                2500
+            ]
+        },
+        {
+            "command": "KeyPress",
+            "args": [
+                "F",
+                1
+            ]
+        },
+        {
+            "command": "Delay",
+            "args": [
+                1500
+            ]
+        },
+        {
+            "command": "KeyHoldAndRelease",
+            "args": [
+                "W",
+                0.85
+            ]
+        },
+        {
+            "command": "Delay",
+            "args": [
+                2000
+            ]
+        },
+        {
+            "command": "KeyPress",
+            "args": [
+                "Q",
+                1
+            ]
+        }
+    ]
+}

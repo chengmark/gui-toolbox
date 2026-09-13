@@ -1,0 +1,14 @@
+{
+  "common": {
+    "locale": "en"
+  },
+  "scripts": {
+    "schemaVersion": 1,
+    "scriptFavorites": [
+      "poison.json"
+    ]
+  },
+  "translation": {
+    "enabled": true
+  }
+}

@@ -1,0 +1,47 @@
+---
+description: Use Conventional Commits for all git commits
+alwaysApply: true
+---
+
+# Conventional Commits
+
+Always use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages in this repo.
+
+## Format
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+## Types
+
+- `feat`: new feature
+- `fix`: bug fix
+- `docs`: documentation only
+- `style`: formatting / non-functional style
+- `refactor`: neither fix nor feature
+- `perf`: performance improvement
+- `test`: adding or fixing tests
+- `build`: build system or dependencies
+- `ci`: CI configuration
+- `chore`: maintenance / tooling
+- `revert`: revert a previous commit
+
+## Examples
+
+```
+feat: add script editor keybind recording
+fix(translator): restore status after failed OCR
+docs: update README setup steps
+chore: ignore local build artifacts
+```
+
+## Rules
+
+- Subject in imperative mood, lowercase, no trailing period
+- Keep the subject under ~72 characters
+- Prefer a scope when the change is clearly domain-specific (e.g. `scripts`, `keybinds`, `translator`)
