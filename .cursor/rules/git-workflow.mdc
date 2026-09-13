@@ -16,6 +16,10 @@ alwaysApply: true
 
 ## Releases
 
-Merges into `main` trigger `.github/workflows/release.yml`, which builds the Windows installer and publishes a GitHub Release via electron-builder.
+Merges into `main` trigger `.github/workflows/release.yml`, which:
 
-When a change should ship as a new app version, bump `version` in `package.json` in the PR (semver). Re-publishing the same version updates the existing GitHub Release assets.
+1. Auto-bumps the patch version in `package.json`
+2. Commits that bump with `[skip ci]` (avoids a release loop)
+3. Builds the Windows installer and publishes a GitHub Release
+
+Do **not** manually bump `package.json` version in feature PRs unless you intentionally need a minor/major bump.
