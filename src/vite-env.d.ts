@@ -63,12 +63,16 @@ type AppConfig = {
   translation: {
     enabled: boolean
   }
+  updates: {
+    skippedVersion: string | null
+  }
 }
 
 type AppConfigPatch = {
   common?: Partial<AppConfig["common"]>
   scripts?: Partial<AppConfig["scripts"]>
   translation?: Partial<AppConfig["translation"]>
+  updates?: Partial<AppConfig["updates"]>
 }
 
 type AppSettingsPathInfo = {
@@ -148,6 +152,7 @@ interface Window {
     choosePath: () => Promise<AppSettingsPathInfo | null>
   }
   updaterApi: {
+    getVersion: () => Promise<string>
     check: () => Promise<UpdaterCheckResult>
     download: () => Promise<{ started: boolean }>
     cancelDownload: () => Promise<void>

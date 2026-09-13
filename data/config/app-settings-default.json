@@ -8,5 +8,8 @@
   },
   "translation": {
     "enabled": false
+  },
+  "updates": {
+    "skippedVersion": null
   }
 }

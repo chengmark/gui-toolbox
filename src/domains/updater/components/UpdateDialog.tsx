@@ -16,6 +16,7 @@ type UpdateDialogProps = {
   onDismiss: () => void
   onUpdate: () => void
   onInstall: () => void
+  onSkip: () => void
 }
 
 export function UpdateDialog({
@@ -24,10 +25,12 @@ export function UpdateDialog({
   onDismiss,
   onUpdate,
   onInstall,
+  onSkip,
 }: UpdateDialogProps) {
   const { t } = useI18n()
   const busy = state.phase === "downloading"
   const percent = Math.round(state.percent)
+  const canSkip = state.phase === "available"
 
   return (
     <Dialog
@@ -99,6 +102,16 @@ export function UpdateDialog({
             </>
           ) : (
             <>
+              {canSkip ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => void onSkip()}
+                >
+                  {t("updater.skipVersion")}
+                </Button>
+              ) : null}
               <Button
                 type="button"
                 variant="ghost"

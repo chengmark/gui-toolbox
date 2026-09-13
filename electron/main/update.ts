@@ -59,6 +59,8 @@ export function registerUpdaterIpc() {
     // Feed URL may already be configured via electron-builder publish config.
   }
 
+  ipcMain.handle('updater:get-version', () => app.getVersion())
+
   ipcMain.handle('updater:check', async (): Promise<UpdaterCheckResult> => {
     const currentVersion = app.getVersion()
 

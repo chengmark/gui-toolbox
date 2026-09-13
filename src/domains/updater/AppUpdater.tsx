@@ -1,16 +1,17 @@
 import { UpdateDialog } from "@/domains/updater/components/UpdateDialog"
-import { useAppUpdater } from "@/domains/updater/hooks/useAppUpdater"
+import { useUpdater } from "@/domains/updater/UpdaterProvider"
 
 export function AppUpdater() {
-  const updater = useAppUpdater()
+  const updater = useUpdater()
 
   return (
     <UpdateDialog
-      open={updater.open}
-      state={updater.state}
-      onDismiss={updater.dismiss}
+      open={updater.promptOpen}
+      state={updater.prompt}
+      onDismiss={updater.dismissPrompt}
       onUpdate={updater.startDownload}
       onInstall={updater.install}
+      onSkip={updater.skipVersion}
     />
   )
 }

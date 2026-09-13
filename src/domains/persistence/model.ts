@@ -11,18 +11,23 @@ export type AppConfig = {
   translation: {
     enabled: boolean
   }
+  updates: {
+    skippedVersion: string | null
+  }
 }
 
 export type AppConfigPatch = {
   common?: Partial<AppConfig["common"]>
   scripts?: Partial<AppConfig["scripts"]>
   translation?: Partial<AppConfig["translation"]>
+  updates?: Partial<AppConfig["updates"]>
 }
 
 export const DEFAULT_APP_CONFIG: AppConfig = {
   common: { locale: null },
   scripts: { schemaVersion: 1, scriptFavorites: [] },
   translation: { enabled: false },
+  updates: { skippedVersion: null },
 }
 
 const LEGACY_LOCALE_KEY = "yysls-toolbox.locale"
@@ -76,7 +81,7 @@ export async function hydrateAppConfig(): Promise<AppConfig> {
     patch.scripts = { scriptFavorites: legacyFavorites }
   }
 
-  if (patch.common || patch.scripts || patch.translation) {
+  if (patch.common || patch.scripts || patch.translation || patch.updates) {
     config = await api.patch(patch)
   }
 

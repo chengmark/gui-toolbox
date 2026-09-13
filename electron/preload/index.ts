@@ -165,12 +165,16 @@ export type AppConfig = {
   translation: {
     enabled: boolean
   }
+  updates: {
+    skippedVersion: string | null
+  }
 }
 
 export type AppConfigPatch = {
   common?: Partial<AppConfig['common']>
   scripts?: Partial<AppConfig['scripts']>
   translation?: Partial<AppConfig['translation']>
+  updates?: Partial<AppConfig['updates']>
 }
 
 export type AppSettingsPathInfo = {
@@ -225,6 +229,7 @@ export type UpdaterProgress = {
 }
 
 contextBridge.exposeInMainWorld('updaterApi', {
+  getVersion: (): Promise<string> => ipcRenderer.invoke('updater:get-version'),
   check: (): Promise<UpdaterCheckResult> => ipcRenderer.invoke('updater:check'),
   download: (): Promise<{ started: boolean }> =>
     ipcRenderer.invoke('updater:download'),

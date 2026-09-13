@@ -21,6 +21,7 @@ type AppConfigContextValue = {
   setLocale: (locale: AppConfigLocale | null) => Promise<void>
   setScriptFavorites: (filenames: string[]) => Promise<void>
   setTranslationEnabled: (enabled: boolean) => Promise<void>
+  setSkippedUpdateVersion: (skippedVersion: string | null) => Promise<void>
   reload: () => Promise<void>
 }
 
@@ -52,6 +53,7 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
             patch.scripts?.scriptFavorites ?? current.scripts.scriptFavorites,
         },
         translation: { ...current.translation, ...patch.translation },
+        updates: { ...current.updates, ...patch.updates },
       }))
       return
     }
@@ -80,6 +82,13 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
     [persist],
   )
 
+  const setSkippedUpdateVersion = useCallback(
+    async (skippedVersion: string | null) => {
+      await persist({ updates: { skippedVersion } })
+    },
+    [persist],
+  )
+
   const reload = useCallback(async () => {
     if (!window.appConfigApi) return
     const next = await window.appConfigApi.get()
@@ -93,9 +102,18 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       setLocale,
       setScriptFavorites,
       setTranslationEnabled,
+      setSkippedUpdateVersion,
       reload,
     }),
-    [ready, config, setLocale, setScriptFavorites, setTranslationEnabled, reload],
+    [
+      ready,
+      config,
+      setLocale,
+      setScriptFavorites,
+      setTranslationEnabled,
+      setSkippedUpdateVersion,
+      reload,
+    ],
   )
 
   return (
