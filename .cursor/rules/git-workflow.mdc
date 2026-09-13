@@ -1,0 +1,21 @@
+---
+description: Feature branch and PR workflow for this repo
+alwaysApply: true
+---
+
+# Git workflow
+
+## Feature development
+
+1. **Always create a feature branch first** before making code changes.
+2. Do **not** commit feature work directly on `main`.
+3. Prefer branch names like `feat/...`, `fix/...`, `chore/...`, `docs/...`.
+4. Commit on the feature branch using Conventional Commits.
+5. Push the feature branch when work is ready to share.
+6. **Do not open a PR to `main` unless the user explicitly asks.**
+
+## Releases
+
+Merges into `main` trigger `.github/workflows/release.yml`, which builds the Windows installer and publishes a GitHub Release via electron-builder.
+
+When a change should ship as a new app version, bump `version` in `package.json` in the PR (semver). Re-publishing the same version updates the existing GitHub Release assets.

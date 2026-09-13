@@ -37,7 +37,12 @@ Packaged builds keep writable config under Electron `userData/config/`.
 | `bun run dev` | Start Electron in development mode |
 | `bun run build` | Build and package the desktop app |
 | `bun run build:dir` | Build unpackaged app directory |
+| `bun run release` | Build and publish to GitHub Releases |
 | `bun run typecheck` | TypeScript check |
+
+## Releases
+
+Merging a PR into `main` runs GitHub Actions (`.github/workflows/release.yml`), which builds the Windows NSIS installer and publishes a GitHub Release for the `version` in `package.json`. Bump that version in the PR when you want a new release tag.
 
 ## Add shadcn components
 
