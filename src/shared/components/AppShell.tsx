@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 import { SideNav } from "@/shared/components/SideNav"
+import { StatusBar } from "@/shared/components/StatusBar"
 import { useI18n } from "@/shared/i18n"
 import { APP_TABS, type AppTab } from "@/shared/model"
 
@@ -41,6 +42,8 @@ export function AppShell({ activeTab, onTabChange, children }: AppShellProps) {
           {children}
         </main>
       </div>
+
+      <StatusBar />
     </div>
   )
 }

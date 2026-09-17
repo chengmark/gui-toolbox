@@ -103,7 +103,8 @@ export function SettingsView() {
   const canUpdate =
     (updater.info.status === "available" || updater.info.status === "skipped") &&
     Boolean(updater.info.latestVersion) &&
-    !updater.promptOpen
+    updater.prompt.phase !== "downloading" &&
+    updater.prompt.phase !== "ready"
 
   const statusText = (() => {
     switch (updater.info.status) {
@@ -287,7 +288,7 @@ export function SettingsView() {
               type="button"
               size="sm"
               disabled={!canUpdate || updater.info.checking}
-              onClick={() => updater.openUpdatePrompt()}
+              onClick={() => updater.startDownload()}
             >
               {t("settings.updatesUpdate")}
             </Button>

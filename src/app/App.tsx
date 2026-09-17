@@ -4,7 +4,6 @@ import { ScriptsView } from "@/domains/scripts"
 import { TranslatorView } from "@/domains/translator"
 import { KeybindsView } from "@/domains/keybinds"
 import { ClosePromptDialog, SettingsView } from "@/domains/settings"
-import { AppUpdater } from "@/domains/updater"
 
 function renderPage(tab: AppTab) {
   switch (tab) {
@@ -27,7 +26,6 @@ export default function App() {
       <AppShell activeTab={activeTab} onTabChange={setActiveTab}>
         <ViewTransition viewKey={activeTab}>{renderPage(activeTab)}</ViewTransition>
       </AppShell>
-      <AppUpdater />
       <ClosePromptDialog />
     </>
   )

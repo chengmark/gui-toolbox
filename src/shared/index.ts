@@ -1,6 +1,7 @@
 export type { AppTab } from "@/shared/model"
 export { APP_TABS } from "@/shared/model"
 export { AppShell } from "@/shared/components/AppShell"
+export { StatusBar } from "@/shared/components/StatusBar"
 export { ViewTransition } from "@/shared/components/ViewTransition"
 export { PageHeader, PlaceholderPage } from "@/shared/components/PageFrame"
 export { InlineEditCell } from "@/shared/components/InlineEditCell"
