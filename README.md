@@ -45,8 +45,9 @@ Packaged builds keep writable config under Electron `userData/config/`.
 Merging a PR into `main` runs GitHub Actions (`.github/workflows/release.yml`), which:
 
 1. Auto-bumps the patch version in `package.json` (e.g. `0.1.0` → `0.1.1`) and commits it with `[skip ci]`
-2. Builds the Windows NSIS installer
-3. Publishes a GitHub Release for that version (used by in-app auto-update)
+2. Builds release notes from commits since the previous `v*` tag (excluding `[skip ci]` bumps)
+3. Builds the Windows NSIS installer
+4. Publishes a GitHub Release for that version (used by in-app auto-update)
 
 You do not need to bump the version in feature PRs.
 
