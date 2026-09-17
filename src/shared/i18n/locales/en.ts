@@ -34,6 +34,18 @@ export const en = {
     languageDescription:
       "Choose the interface language. Changes apply immediately and are saved automatically.",
     languageLabel: "Display language",
+    generalTitle: "Startup & background",
+    generalDescription:
+      "Control whether the app starts with Windows and what the close button does.",
+    openAtLoginLabel: "Launch on Windows startup",
+    openAtLoginHint:
+      "Start GUI Toolbox when you sign in. Applies to installed (packaged) builds.",
+    closeActionLabel: "When closing the window",
+    closeActionHint:
+      "Ask each time, always minimize to the tray, or always quit. You can also remember a choice from the close prompt.",
+    closeActionAsk: "Ask every time",
+    closeActionTray: "Minimize to tray",
+    closeActionQuit: "Quit the app",
     pathTitle: "Settings file",
     pathDescription:
       "Choose where app-settings.json is stored. Language, favorites, and related prefs are written here.",
@@ -60,6 +72,14 @@ export const en = {
     updatesUnknown: "—",
     updatesCheck: "Check for updates",
     updatesUpdate: "Update now",
+  },
+  closePrompt: {
+    title: "Close GUI Toolbox",
+    body: "Minimize to the tray to keep scripts and keybinds running in the background, or quit the app completely.",
+    tray: "Minimize to tray",
+    quit: "Quit app",
+    remember: "Remember this choice",
+    rememberHint: "You can change this later in Settings.",
   },
   scripts: {
     title: "Scripts",

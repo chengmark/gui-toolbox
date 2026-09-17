@@ -13,12 +13,15 @@ import {
   type AppConfig,
   type AppConfigLocale,
   type AppConfigPatch,
+  type CloseAction,
 } from "@/domains/persistence/model"
 
 type AppConfigContextValue = {
   ready: boolean
   config: AppConfig
   setLocale: (locale: AppConfigLocale | null) => Promise<void>
+  setOpenAtLogin: (enabled: boolean) => Promise<void>
+  setCloseAction: (action: CloseAction) => Promise<void>
   setScriptFavorites: (filenames: string[]) => Promise<void>
   setTranslationEnabled: (enabled: boolean) => Promise<void>
   setSkippedUpdateVersion: (skippedVersion: string | null) => Promise<void>
@@ -41,6 +44,15 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true
     }
+  }, [])
+
+  useEffect(() => {
+    const api = window.appConfigApi
+    if (!api?.onUpdated) return
+    return api.onUpdated((next) => {
+      setConfig(next)
+      setReady(true)
+    })
   }, [])
 
   const persist = useCallback(async (patch: AppConfigPatch) => {
@@ -68,6 +80,20 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
   const setLocale = useCallback(
     async (locale: AppConfigLocale | null) => {
       await persist({ common: { locale } })
+    },
+    [persist],
+  )
+
+  const setOpenAtLogin = useCallback(
+    async (enabled: boolean) => {
+      await persist({ common: { openAtLogin: enabled } })
+    },
+    [persist],
+  )
+
+  const setCloseAction = useCallback(
+    async (action: CloseAction) => {
+      await persist({ common: { closeAction: action } })
     },
     [persist],
   )
@@ -104,6 +130,8 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       ready,
       config,
       setLocale,
+      setOpenAtLogin,
+      setCloseAction,
       setScriptFavorites,
       setTranslationEnabled,
       setSkippedUpdateVersion,
@@ -113,6 +141,8 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       ready,
       config,
       setLocale,
+      setOpenAtLogin,
+      setCloseAction,
       setScriptFavorites,
       setTranslationEnabled,
       setSkippedUpdateVersion,

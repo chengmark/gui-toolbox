@@ -1,8 +1,12 @@
 export type AppConfigLocale = "en" | "zh-CN" | "zh-TW"
 
+export type CloseAction = "ask" | "tray" | "quit"
+
 export type AppConfig = {
   common: {
     locale: AppConfigLocale | null
+    openAtLogin: boolean
+    closeAction: CloseAction
   }
   scripts: {
     schemaVersion: 1
@@ -25,7 +29,7 @@ export type AppConfigPatch = {
 }
 
 export const DEFAULT_APP_CONFIG: AppConfig = {
-  common: { locale: null },
+  common: { locale: null, openAtLogin: false, closeAction: "ask" },
   scripts: { schemaVersion: 1, scriptFavorites: [], folderPath: null },
   translation: { enabled: false },
   updates: { skippedVersion: null },

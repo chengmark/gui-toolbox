@@ -3,7 +3,7 @@ import { AppShell, type AppTab } from "@/shared"
 import { ScriptsView } from "@/domains/scripts"
 import { TranslatorView } from "@/domains/translator"
 import { KeybindsView } from "@/domains/keybinds"
-import { SettingsView } from "@/domains/settings"
+import { ClosePromptDialog, SettingsView } from "@/domains/settings"
 import { AppUpdater } from "@/domains/updater"
 
 function renderPage(tab: AppTab) {
@@ -28,6 +28,7 @@ export default function App() {
         {renderPage(activeTab)}
       </AppShell>
       <AppUpdater />
+      <ClosePromptDialog />
     </>
   )
 }

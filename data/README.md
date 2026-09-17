@@ -28,10 +28,22 @@ On first launch (no writable settings file yet), the app copies `app-settings-de
 
 ```json
 {
-  "common": { "locale": null },
-  "scripts": { "schemaVersion": 1, "scriptFavorites": [] },
-  "translation": { "enabled": false }
+  "common": {
+    "locale": null,
+    "openAtLogin": false,
+    "closeAction": "ask"
+  },
+  "scripts": {
+    "schemaVersion": 1,
+    "scriptFavorites": [],
+    "folderPath": null
+  },
+  "translation": { "enabled": false },
+  "updates": { "skippedVersion": null }
 }
 ```
+
+- `openAtLogin` — launch with Windows (packaged builds)
+- `closeAction` — `ask` (prompt), `tray` (hide to tray), or `quit` (exit). The close prompt can remember a choice.
 
 A custom settings path is remembered in `%APPDATA%/GUI Toolbox/app-settings-location.json`.

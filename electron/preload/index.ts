@@ -169,6 +169,8 @@ contextBridge.exposeInMainWorld('keybindsApi', {
 export type AppConfig = {
   common: {
     locale: 'en' | 'zh-CN' | 'zh-TW' | null
+    openAtLogin: boolean
+    closeAction: 'ask' | 'tray' | 'quit'
   }
   scripts: {
     schemaVersion: 1
@@ -210,6 +212,34 @@ contextBridge.exposeInMainWorld('appConfigApi', {
     ipcRenderer.invoke('appConfig:resetPath'),
   choosePath: (): Promise<AppSettingsPathInfo | null> =>
     ipcRenderer.invoke('appConfig:choosePath'),
+  onUpdated: (listener: (config: AppConfig) => void): (() => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, config: AppConfig) => {
+      listener(config)
+    }
+    ipcRenderer.on('appConfig:updated', handler)
+    return () => {
+      ipcRenderer.off('appConfig:updated', handler)
+    }
+  },
+})
+
+export type ClosePromptResult = {
+  choice: 'tray' | 'quit' | 'cancel'
+  remember: boolean
+}
+
+contextBridge.exposeInMainWorld('appBehaviorApi', {
+  onClosePrompt: (listener: () => void): (() => void) => {
+    const handler = () => {
+      listener()
+    }
+    ipcRenderer.on('app:close-prompt', handler)
+    return () => {
+      ipcRenderer.off('app:close-prompt', handler)
+    }
+  },
+  submitClosePrompt: (result: ClosePromptResult): Promise<boolean> =>
+    ipcRenderer.invoke('app:close-prompt-submit', result),
 })
 
 export type UpdaterCheckResult =

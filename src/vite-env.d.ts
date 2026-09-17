@@ -61,6 +61,8 @@ type KeybindsState = {
 type AppConfig = {
   common: {
     locale: "en" | "zh-CN" | "zh-TW" | null
+    openAtLogin: boolean
+    closeAction: "ask" | "tray" | "quit"
   }
   scripts: {
     schemaVersion: 1
@@ -161,6 +163,14 @@ interface Window {
     setPath: (filePath: string) => Promise<AppSettingsPathInfo>
     resetPath: () => Promise<AppSettingsPathInfo>
     choosePath: () => Promise<AppSettingsPathInfo | null>
+    onUpdated: (listener: (config: AppConfig) => void) => () => void
+  }
+  appBehaviorApi: {
+    onClosePrompt: (listener: () => void) => () => void
+    submitClosePrompt: (result: {
+      choice: "tray" | "quit" | "cancel"
+      remember: boolean
+    }) => Promise<boolean>
   }
   updaterApi: {
     getVersion: () => Promise<string>

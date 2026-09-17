@@ -7,6 +7,7 @@ import { useI18n, LOCALE_OPTIONS, type Locale } from "@/shared/i18n"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
+import { Switch } from "@/shared/ui/switch"
 import {
   Select,
   SelectContent,
@@ -23,7 +24,7 @@ type PathInfo = {
 
 export function SettingsView() {
   const { t, locale, setLocale } = useI18n()
-  const { reload } = useAppConfig()
+  const { reload, config, ready, setOpenAtLogin, setCloseAction } = useAppConfig()
   const updater = useUpdater()
   const [pathInfo, setPathInfo] = useState<PathInfo | null>(null)
   const [draftPath, setDraftPath] = useState("")
@@ -163,6 +164,65 @@ export function SettingsView() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-xl rounded-md border border-border bg-card p-4">
+          <div className="space-y-1">
+            <h2 className="text-[13px] font-semibold text-foreground">
+              {t("settings.generalTitle")}
+            </h2>
+            <p className="text-[12px] text-muted-foreground">
+              {t("settings.generalDescription")}
+            </p>
+          </div>
+
+          <div className="mt-4 space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="space-y-0.5">
+                <Label htmlFor="settings-open-at-login" className="text-[12px]">
+                  {t("settings.openAtLoginLabel")}
+                </Label>
+                <p className="text-[11px] text-muted-foreground">
+                  {t("settings.openAtLoginHint")}
+                </p>
+              </div>
+              <Switch
+                id="settings-open-at-login"
+                checked={Boolean(config.common.openAtLogin)}
+                disabled={!ready}
+                onCheckedChange={(checked) => {
+                  void setOpenAtLogin(checked)
+                }}
+              />
+            </div>
+
+            <div className="space-y-1.5 border-t border-border pt-4">
+              <Label htmlFor="settings-close-action" className="text-[12px]">
+                {t("settings.closeActionLabel")}
+              </Label>
+              <p className="text-[11px] text-muted-foreground">
+                {t("settings.closeActionHint")}
+              </p>
+              <Select
+                value={config.common.closeAction ?? "ask"}
+                disabled={!ready}
+                onValueChange={(value) => {
+                  if (value === "ask" || value === "tray" || value === "quit") {
+                    void setCloseAction(value)
+                  }
+                }}
+              >
+                <SelectTrigger id="settings-close-action" className="h-9 w-full max-w-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ask">{t("settings.closeActionAsk")}</SelectItem>
+                  <SelectItem value="tray">{t("settings.closeActionTray")}</SelectItem>
+                  <SelectItem value="quit">{t("settings.closeActionQuit")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </section>
 

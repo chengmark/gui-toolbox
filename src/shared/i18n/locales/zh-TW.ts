@@ -35,6 +35,16 @@ export const zhTW: MessageCatalog = {
     languageTitle: "語言",
     languageDescription: "選擇介面語言，變更後立即生效並自動儲存。",
     languageLabel: "顯示語言",
+    generalTitle: "啟動與背景",
+    generalDescription: "控制是否隨 Windows 啟動，以及關閉按鈕的行為。",
+    openAtLoginLabel: "開機時啟動",
+    openAtLoginHint: "登入 Windows 後自動啟動 GUI 工具箱。對已安裝（封裝）版本生效。",
+    closeActionLabel: "關閉視窗時",
+    closeActionHint:
+      "每次詢問、一律最小化到系統匣，或一律結束。也可在關閉提示中勾選「記住我的選擇」。",
+    closeActionAsk: "每次詢問",
+    closeActionTray: "最小化到系統匣",
+    closeActionQuit: "結束應用程式",
     pathTitle: "設定檔",
     pathDescription:
       "選擇 app-settings.json 的儲存位置。語言、收藏等相關偏好會寫入此檔案。",
@@ -60,6 +70,14 @@ export const zhTW: MessageCatalog = {
     updatesUnknown: "—",
     updatesCheck: "檢查更新",
     updatesUpdate: "立即更新",
+  },
+  closePrompt: {
+    title: "關閉 GUI 工具箱",
+    body: "最小化到系統匣可在背景繼續執行腳本和快捷鍵，或選擇結束以完全關閉應用程式。",
+    tray: "最小化到系統匣",
+    quit: "結束應用程式",
+    remember: "記住我的選擇",
+    rememberHint: "之後可在設定中變更。",
   },
   scripts: {
     title: "腳本",

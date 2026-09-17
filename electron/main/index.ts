@@ -30,6 +30,11 @@ import {
 import { registerAppConfigIpc, loadAppConfig } from './app-config'
 import { destroyAppToast } from './app-toast'
 import { registerScriptsDirIpc } from './scripts-dir'
+import {
+  applyAppBehaviorFromConfig,
+  attachWindowCloseBehavior,
+  registerAppBehavior,
+} from './app-behavior'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -99,6 +104,8 @@ async function createWindow() {
     win = null
   })
 
+  attachWindowCloseBehavior(win)
+
   startTranslator(win)
   startScriptRunner(win)
   startKeybinds(win)
@@ -160,12 +167,15 @@ app.whenReady().then(() => {
   registerAppConfigIpc(ipcMain)
   registerScriptsDirIpc(ipcMain)
   registerUpdaterIpc()
-  void loadAppConfig().then(() => {
-    createWindow()
+  registerAppBehavior({ getMainWindow: () => win })
+  void loadAppConfig().then((config) => {
+    applyAppBehaviorFromConfig(config)
+    void createWindow()
   })
 })
 
 app.on('window-all-closed', () => {
+  // When close-to-tray hides the window, this may not fire until a real quit.
   stopTranslator()
   stopScriptRunner()
   stopKeybinds()
@@ -174,10 +184,17 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 })
 
+app.on('before-quit', () => {
+  stopTranslator()
+  stopScriptRunner()
+  stopKeybinds()
+  destroyAppToast()
+})
+
 app.on('second-instance', () => {
   if (win && !win.isDestroyed()) {
-    // Focus on the main window if the user tried to open another
     if (win.isMinimized()) win.restore()
+    if (!win.isVisible()) win.show()
     win.focus()
     return
   }
@@ -185,8 +202,14 @@ app.on('second-instance', () => {
 })
 
 app.on('activate', () => {
+  if (win && !win.isDestroyed()) {
+    if (!win.isVisible()) win.show()
+    win.focus()
+    return
+  }
   const allWindows = BrowserWindow.getAllWindows().filter((w) => !w.isDestroyed())
   if (allWindows.length) {
+    allWindows[0].show()
     allWindows[0].focus()
   } else {
     void createWindow()

@@ -1,4 +1,4 @@
-import { app, dialog, type IpcMain } from 'electron'
+import { app, dialog, BrowserWindow, type IpcMain } from 'electron'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import {
@@ -13,10 +13,22 @@ import {
 export const APP_CONFIG_LOCALES = ['en', 'zh-CN', 'zh-TW'] as const
 export type AppConfigLocale = (typeof APP_CONFIG_LOCALES)[number]
 
+export const CLOSE_ACTIONS = ['ask', 'tray', 'quit'] as const
+export type CloseAction = (typeof CLOSE_ACTIONS)[number]
+
 export type AppConfig = {
   common: {
     /** null = follow OS / browser language until the user picks one in Settings */
     locale: AppConfigLocale | null
+    /** Launch GUI Toolbox when the user signs in to Windows (packaged builds). */
+    openAtLogin: boolean
+    /**
+     * Close-button behavior:
+     * - ask: prompt minimize-to-tray vs quit (optional remember)
+     * - tray: always hide to tray
+     * - quit: always exit the app
+     */
+    closeAction: CloseAction
   }
   scripts: {
     schemaVersion: 1
@@ -49,10 +61,26 @@ export type AppSettingsPathInfo = {
 }
 
 const DEFAULT_CONFIG: AppConfig = {
-  common: { locale: null },
+  common: { locale: null, openAtLogin: false, closeAction: 'ask' },
   scripts: { schemaVersion: 1, scriptFavorites: [], folderPath: null },
   translation: { enabled: false },
   updates: { skippedVersion: null },
+}
+
+function isCloseAction(value: unknown): value is CloseAction {
+  return (
+    typeof value === 'string' &&
+    (CLOSE_ACTIONS as readonly string[]).includes(value)
+  )
+}
+
+/** Migrate legacy closeToTray boolean → closeAction. */
+function normalizeCloseAction(common: Record<string, unknown>): CloseAction {
+  if (isCloseAction(common.closeAction)) return common.closeAction
+  if (typeof common.closeToTray === 'boolean') {
+    return common.closeToTray ? 'tray' : 'ask'
+  }
+  return DEFAULT_CONFIG.common.closeAction
 }
 
 function normalizeFolderPath(value: unknown): string | null {
@@ -101,6 +129,8 @@ function normalizeConfig(raw: unknown): AppConfig {
     return {
       common: {
         locale: isLocale(data.locale) ? data.locale : null,
+        openAtLogin: DEFAULT_CONFIG.common.openAtLogin,
+        closeAction: DEFAULT_CONFIG.common.closeAction,
       },
       scripts: {
         schemaVersion: 1,
@@ -132,6 +162,11 @@ function normalizeConfig(raw: unknown): AppConfig {
   return {
     common: {
       locale: isLocale(common.locale) ? common.locale : null,
+      openAtLogin:
+        typeof common.openAtLogin === 'boolean'
+          ? common.openAtLogin
+          : DEFAULT_CONFIG.common.openAtLogin,
+      closeAction: normalizeCloseAction(common),
     },
     scripts: {
       schemaVersion: 1,
@@ -162,6 +197,18 @@ function needsRewrite(raw: unknown): boolean {
     return true
   }
   if (!('updates' in data)) return true
+  const common =
+    data.common && typeof data.common === 'object'
+      ? (data.common as Record<string, unknown>)
+      : null
+  if (
+    !common ||
+    !('openAtLogin' in common) ||
+    (!('closeAction' in common) && !('closeToTray' in common))
+  ) {
+    return true
+  }
+  if ('closeToTray' in common && !('closeAction' in common)) return true
   const scripts =
     data.scripts && typeof data.scripts === 'object'
       ? (data.scripts as Record<string, unknown>)
@@ -321,6 +368,16 @@ export async function patchAppConfig(patch: AppConfigPatch): Promise<AppConfig> 
             : isLocale(patch.common.locale)
               ? patch.common.locale
               : current.common.locale,
+      openAtLogin:
+        patch.common?.openAtLogin === undefined
+          ? current.common.openAtLogin
+          : Boolean(patch.common.openAtLogin),
+      closeAction:
+        patch.common?.closeAction === undefined
+          ? current.common.closeAction
+          : isCloseAction(patch.common.closeAction)
+            ? patch.common.closeAction
+            : current.common.closeAction,
     },
     scripts: {
       schemaVersion: 1,
@@ -358,6 +415,17 @@ export async function patchAppConfig(patch: AppConfigPatch): Promise<AppConfig> 
       console.error('[app-config] failed to save', error)
     })
   await writeQueue
+
+  // Lazy import avoids a circular dependency with app-behavior ↔ app-config.
+  const { applyAppBehaviorFromConfig } = await import('./app-behavior')
+  applyAppBehaviorFromConfig(next)
+
+  for (const win of BrowserWindow.getAllWindows()) {
+    if (!win.isDestroyed()) {
+      win.webContents.send('appConfig:updated', next)
+    }
+  }
+
   return next
 }
 

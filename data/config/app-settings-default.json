@@ -1,6 +1,8 @@
 {
   "common": {
-    "locale": null
+    "locale": null,
+    "openAtLogin": true,
+    "closeAction": "ask"
   },
   "scripts": {
     "schemaVersion": 1,

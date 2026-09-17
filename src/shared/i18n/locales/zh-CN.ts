@@ -35,6 +35,16 @@ export const zhCN: MessageCatalog = {
     languageTitle: "语言",
     languageDescription: "选择界面语言，更改后立即生效并自动保存。",
     languageLabel: "显示语言",
+    generalTitle: "启动与后台",
+    generalDescription: "控制是否随 Windows 启动，以及关闭按钮的行为。",
+    openAtLoginLabel: "开机时启动",
+    openAtLoginHint: "登录 Windows 后自动启动 GUI 工具箱。对已安装（打包）版本生效。",
+    closeActionLabel: "关闭窗口时",
+    closeActionHint:
+      "每次询问、始终最小化到托盘，或始终退出。也可在关闭提示中勾选“记住我的选择”。",
+    closeActionAsk: "每次询问",
+    closeActionTray: "最小化到托盘",
+    closeActionQuit: "退出应用",
     pathTitle: "设置文件",
     pathDescription:
       "选择 app-settings.json 的保存位置。语言、收藏等相关偏好会写入此文件。",
@@ -60,6 +70,14 @@ export const zhCN: MessageCatalog = {
     updatesUnknown: "—",
     updatesCheck: "检查更新",
     updatesUpdate: "立即更新",
+  },
+  closePrompt: {
+    title: "关闭 GUI 工具箱",
+    body: "最小化到托盘可在后台继续运行脚本和快捷键，或选择退出以完全关闭应用。",
+    tray: "最小化到托盘",
+    quit: "退出应用",
+    remember: "记住我的选择",
+    rememberHint: "之后可在设置中更改。",
   },
   scripts: {
     title: "脚本",
