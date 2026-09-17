@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { AppShell, type AppTab } from "@/shared"
+import { AppShell, ViewTransition, type AppTab } from "@/shared"
 import { ScriptsView } from "@/domains/scripts"
 import { TranslatorView } from "@/domains/translator"
 import { KeybindsView } from "@/domains/keybinds"
@@ -25,7 +25,7 @@ export default function App() {
   return (
     <>
       <AppShell activeTab={activeTab} onTabChange={setActiveTab}>
-        {renderPage(activeTab)}
+        <ViewTransition viewKey={activeTab}>{renderPage(activeTab)}</ViewTransition>
       </AppShell>
       <AppUpdater />
       <ClosePromptDialog />

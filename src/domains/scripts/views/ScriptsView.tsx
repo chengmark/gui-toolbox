@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, type AnimationEvent } from "react"
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react"
 import { PageHeader } from "@/shared"
 import { useI18n } from "@/shared/i18n"
@@ -94,6 +94,7 @@ export function ScriptsView() {
   const catalog = useScriptsCatalog()
   const editor = useScriptEditor(null)
   const [sort, setSort] = useState<SortState>({ key: "name", dir: "asc" })
+  const [editorLeaving, setEditorLeaving] = useState(false)
 
   const editorReady =
     editor.filename !== null && !editor.loading && (editor.draft !== null || editor.error !== null)
@@ -112,15 +113,40 @@ export function ScriptsView() {
     })
   }
 
+  function requestEditorClose() {
+    if (editorLeaving) return
+    const reduceMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    if (reduceMotion) {
+      editor.close()
+      return
+    }
+    setEditorLeaving(true)
+  }
+
+  function onEditorTransitionEnd(event: AnimationEvent<HTMLDivElement>) {
+    if (event.target !== event.currentTarget) return
+    if (!editorLeaving) return
+    editor.close()
+    setEditorLeaving(false)
+  }
+
   if (editorReady) {
     return (
-      <div key={`editor:${editor.filename}`} className="view-swipe-in h-full min-h-0">
+      <div
+        key={`editor:${editor.filename}`}
+        className={cn(
+          "h-full min-h-0",
+          editorLeaving ? "view-swipe-out" : "view-swipe-in",
+        )}
+        onAnimationEnd={onEditorTransitionEnd}
+      >
         <ScriptEditorView
           editor={editor}
-          onBack={() => editor.close()}
+          onBack={requestEditorClose}
           onSaved={(entry) => {
             catalog.applySavedScript(entry)
-            editor.close()
           }}
         />
       </div>
@@ -128,7 +154,7 @@ export function ScriptsView() {
   }
 
   return (
-    <div key="scripts-list" className="view-fade-in flex h-full min-h-0 flex-col">
+    <div key="scripts-list" className="flex h-full min-h-0 flex-col">
       <PageHeader
         title={t("scripts.title")}
         description={
