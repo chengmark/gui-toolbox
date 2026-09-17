@@ -223,7 +223,7 @@ export function UpdaterProvider({ children }: { children: ReactNode }) {
   }, [prompt.phase])
 
   const skipVersion = useCallback(async () => {
-    const version = prompt.newVersion
+    const version = prompt.newVersion || info.latestVersion
     if (!version) {
       setPrompt(INITIAL_PROMPT)
       return
@@ -238,11 +238,17 @@ export function UpdaterProvider({ children }: { children: ReactNode }) {
       latestVersion: version,
     }))
     setPrompt(INITIAL_PROMPT)
-  }, [prompt.newVersion, prompt.phase, setSkippedUpdateVersion])
+  }, [
+    info.latestVersion,
+    prompt.newVersion,
+    prompt.phase,
+    setSkippedUpdateVersion,
+  ])
 
   const startDownload = useCallback(() => {
     const currentVersion = prompt.currentVersion || info.currentVersion
     const newVersion = prompt.newVersion || info.latestVersion || ""
+    if (!newVersion) return
     setPrompt({
       phase: "downloading",
       currentVersion,
@@ -251,14 +257,21 @@ export function UpdaterProvider({ children }: { children: ReactNode }) {
       errorMessage: null,
     })
     void window.updaterApi.download()
-  }, [info.currentVersion, info.latestVersion, prompt.currentVersion, prompt.newVersion])
+  }, [
+    info.currentVersion,
+    info.latestVersion,
+    prompt.currentVersion,
+    prompt.newVersion,
+  ])
 
   const install = useCallback(() => {
     void window.updaterApi.install()
   }, [])
 
+  /** Surface an available update in the status bar (or reopen after dismiss). */
   const openUpdatePrompt = useCallback(() => {
     if (!info.latestVersion) return
+    if (prompt.phase === "downloading" || prompt.phase === "ready") return
     setPrompt({
       phase: "available",
       currentVersion: info.currentVersion,
@@ -266,7 +279,7 @@ export function UpdaterProvider({ children }: { children: ReactNode }) {
       percent: 0,
       errorMessage: null,
     })
-  }, [info.currentVersion, info.latestVersion])
+  }, [info.currentVersion, info.latestVersion, prompt.phase])
 
   const value = useMemo(
     () => ({

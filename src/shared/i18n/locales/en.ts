@@ -59,7 +59,7 @@ export const en = {
     pathError: "Could not update the settings path.",
     updatesTitle: "Updates",
     updatesDescription:
-      "See the installed and latest app versions. Check manually anytime.",
+      "See the installed and latest app versions. Updates download in the status bar — no installer window.",
     updatesCurrent: "Current version",
     updatesLatest: "Latest version",
     updatesStatusIdle: "Not checked yet.",
@@ -228,7 +228,16 @@ export const en = {
     skipVersion: "Skip this version",
     update: "Update",
     retry: "Retry",
-    restart: "Restart to install",
+    restart: "Restart to update",
+  },
+  statusBar: {
+    readyIdle: "Ready",
+    checking: "Checking for updates…",
+    updateAvailable: "Update {version} available",
+    downloading: "Downloading update… {percent}%",
+    ready: "Update {version} ready",
+    error: "Update failed: {message}",
+    versionTitle: "App version",
   },
 } as const
 

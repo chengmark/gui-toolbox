@@ -128,7 +128,8 @@ export function registerUpdaterIpc() {
   })
 
   ipcMain.handle('updater:install', () => {
-    autoUpdater.quitAndInstall(false, true)
+    // Silent NSIS install + relaunch — VS Code–style in-app update, no installer UI.
+    autoUpdater.quitAndInstall(true, true)
   })
 }
 

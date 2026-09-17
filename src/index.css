@@ -34,6 +34,12 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-titlebar: var(--titlebar);
   --color-activity: var(--activity);
+  --color-status-bar: var(--status-bar);
+  --color-status-bar-foreground: var(--status-bar-foreground);
+  --color-status-bar-hover: var(--status-bar-hover);
+  --color-status-accent: var(--status-accent);
+  --color-status-success: var(--status-success);
+  --color-status-danger: var(--status-danger);
 }
 
 /* Cursor Dark–inspired tokens */
@@ -64,6 +70,13 @@
   --sidebar-border: #2b2b2b;
   --titlebar: #141414;
   --activity: #181818;
+  /* Cursor-style status bar (dark chrome, not VS Code blue) */
+  --status-bar: #141414;
+  --status-bar-foreground: #858585;
+  --status-bar-hover: rgba(255, 255, 255, 0.06);
+  --status-accent: #3794ff;
+  --status-success: #89d185;
+  --status-danger: #f14c4c;
 }
 
 @layer base {
