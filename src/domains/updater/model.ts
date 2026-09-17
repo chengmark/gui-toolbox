@@ -28,4 +28,6 @@ export type UpdaterInfo = {
   latestVersion: string | null
   message: string | null
   checking: boolean
+  /** ISO timestamp of the last finished check (startup or manual); null if never checked. */
+  lastCheckedAt: string | null
 }

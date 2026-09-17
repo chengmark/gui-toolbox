@@ -25,6 +25,11 @@ const INITIAL_INFO: UpdaterInfo = {
   latestVersion: null,
   message: null,
   checking: false,
+  lastCheckedAt: null,
+}
+
+function checkedNow(): string {
+  return new Date().toISOString()
 }
 
 type UpdaterContextValue = {
@@ -104,36 +109,44 @@ export function UpdaterProvider({ children }: { children: ReactNode }) {
       result: Awaited<ReturnType<typeof window.updaterApi.check>>,
       options: { promptIfAvailable: boolean; respectSkip: boolean },
     ) => {
+      const lastCheckedAt = checkedNow()
+
       if (result.status === "skipped") {
-        setInfo({
+        setInfo((prev) => ({
+          ...prev,
           status: "unsupported",
           currentVersion: result.currentVersion,
           latestVersion: null,
           message: result.message,
           checking: false,
-        })
+          lastCheckedAt,
+        }))
         return
       }
 
       if (result.status === "error") {
-        setInfo({
+        setInfo((prev) => ({
+          ...prev,
           status: "error",
           currentVersion: result.currentVersion,
           latestVersion: null,
           message: result.message,
           checking: false,
-        })
+          lastCheckedAt,
+        }))
         return
       }
 
       if (result.status === "not-available") {
-        setInfo({
+        setInfo((prev) => ({
+          ...prev,
           status: "up-to-date",
           currentVersion: result.currentVersion,
           latestVersion: result.newVersion ?? result.currentVersion,
           message: null,
           checking: false,
-        })
+          lastCheckedAt,
+        }))
         return
       }
 
@@ -142,13 +155,15 @@ export function UpdaterProvider({ children }: { children: ReactNode }) {
         skippedVersion != null &&
         skippedVersion === result.newVersion
 
-      setInfo({
+      setInfo((prev) => ({
+        ...prev,
         status: isSkipped ? "skipped" : "available",
         currentVersion: result.currentVersion,
         latestVersion: result.newVersion,
         message: null,
         checking: false,
-      })
+        lastCheckedAt,
+      }))
 
       if (options.promptIfAvailable && !isSkipped) {
         setPrompt({
@@ -183,6 +198,7 @@ export function UpdaterProvider({ children }: { children: ReactNode }) {
           status: "error",
           message,
           checking: false,
+          lastCheckedAt: checkedNow(),
         }))
       }
     },

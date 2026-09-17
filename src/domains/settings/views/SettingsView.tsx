@@ -128,6 +128,25 @@ export function SettingsView() {
     }
   })()
 
+  const lastCheckedLabel = (() => {
+    const at = updater.info.lastCheckedAt
+    if (!at) return t("settings.updatesLastCheckedNever")
+    const date = new Date(at)
+    if (Number.isNaN(date.getTime())) return t("settings.updatesLastCheckedNever")
+    return t("settings.updatesLastChecked", {
+      time: date.toLocaleString(locale),
+    })
+  })()
+
+  const statusClassName =
+    updater.info.status === "up-to-date"
+      ? "text-foreground"
+      : updater.info.status === "available"
+        ? "text-foreground"
+        : updater.info.status === "error"
+          ? "text-destructive"
+          : "text-muted-foreground"
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       <PageHeader title={t("settings.title")} description={t("settings.description")} />
@@ -247,7 +266,10 @@ export function SettingsView() {
             </div>
           </dl>
 
-          <p className="mt-3 text-[12px] text-muted-foreground">{statusText}</p>
+          <div className="mt-3 space-y-1">
+            <p className={`text-[12px] ${statusClassName}`}>{statusText}</p>
+            <p className="text-[11px] text-muted-foreground">{lastCheckedLabel}</p>
+          </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <Button
