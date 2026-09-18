@@ -6,6 +6,7 @@ export type AppConfig = {
   common: {
     locale: AppConfigLocale | null
     openAtLogin: boolean
+    openAtLoginAsAdmin: boolean
     closeAction: CloseAction
   }
   scripts: {
@@ -29,7 +30,7 @@ export type AppConfigPatch = {
 }
 
 export const DEFAULT_APP_CONFIG: AppConfig = {
-  common: { locale: null, openAtLogin: false, closeAction: "ask" },
+  common: { locale: null, openAtLogin: false, openAtLoginAsAdmin: false, closeAction: "ask" },
   scripts: { schemaVersion: 1, scriptFavorites: [], folderPath: null },
   translation: { enabled: false },
   updates: { skippedVersion: null },

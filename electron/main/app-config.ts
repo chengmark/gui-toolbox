@@ -23,6 +23,11 @@ export type AppConfig = {
     /** Launch GUI Toolbox when the user signs in to Windows (packaged builds). */
     openAtLogin: boolean
     /**
+     * When openAtLogin is on, start that sign-in instance elevated via a
+     * logon scheduled task. Requires a one-time UAC approval.
+     */
+    openAtLoginAsAdmin: boolean
+    /**
      * Close-button behavior:
      * - ask: prompt minimize-to-tray vs quit (optional remember)
      * - tray: always hide to tray
@@ -61,7 +66,7 @@ export type AppSettingsPathInfo = {
 }
 
 const DEFAULT_CONFIG: AppConfig = {
-  common: { locale: null, openAtLogin: false, closeAction: 'ask' },
+  common: { locale: null, openAtLogin: false, openAtLoginAsAdmin: false, closeAction: 'ask' },
   scripts: { schemaVersion: 1, scriptFavorites: [], folderPath: null },
   translation: { enabled: false },
   updates: { skippedVersion: null },
@@ -130,6 +135,7 @@ function normalizeConfig(raw: unknown): AppConfig {
       common: {
         locale: isLocale(data.locale) ? data.locale : null,
         openAtLogin: DEFAULT_CONFIG.common.openAtLogin,
+        openAtLoginAsAdmin: DEFAULT_CONFIG.common.openAtLoginAsAdmin,
         closeAction: DEFAULT_CONFIG.common.closeAction,
       },
       scripts: {
@@ -166,6 +172,10 @@ function normalizeConfig(raw: unknown): AppConfig {
         typeof common.openAtLogin === 'boolean'
           ? common.openAtLogin
           : DEFAULT_CONFIG.common.openAtLogin,
+      openAtLoginAsAdmin:
+        typeof common.openAtLoginAsAdmin === 'boolean'
+          ? common.openAtLoginAsAdmin
+          : DEFAULT_CONFIG.common.openAtLoginAsAdmin,
       closeAction: normalizeCloseAction(common),
     },
     scripts: {
@@ -204,6 +214,7 @@ function needsRewrite(raw: unknown): boolean {
   if (
     !common ||
     !('openAtLogin' in common) ||
+    !('openAtLoginAsAdmin' in common) ||
     (!('closeAction' in common) && !('closeToTray' in common))
   ) {
     return true
@@ -372,6 +383,10 @@ export async function patchAppConfig(patch: AppConfigPatch): Promise<AppConfig> 
         patch.common?.openAtLogin === undefined
           ? current.common.openAtLogin
           : Boolean(patch.common.openAtLogin),
+      openAtLoginAsAdmin:
+        patch.common?.openAtLoginAsAdmin === undefined
+          ? current.common.openAtLoginAsAdmin
+          : Boolean(patch.common.openAtLoginAsAdmin),
       closeAction:
         patch.common?.closeAction === undefined
           ? current.common.closeAction
@@ -407,6 +422,23 @@ export async function patchAppConfig(patch: AppConfigPatch): Promise<AppConfig> 
     },
   }
 
+  const startupChanged =
+    next.common.openAtLogin !== current.common.openAtLogin ||
+    next.common.openAtLoginAsAdmin !== current.common.openAtLoginAsAdmin
+
+  // Register or remove the elevated logon task before persisting, so a
+  // cancelled UAC prompt does not leave the setting on.
+  const { applyAppBehaviorFromConfig, applyOpenAtLogin } = await import(
+    './app-behavior'
+  )
+  if (startupChanged) {
+    await applyOpenAtLogin(
+      next.common.openAtLogin,
+      next.common.openAtLoginAsAdmin,
+      true,
+    )
+  }
+
   cached = next
   syncScriptsDirOverride(next)
   writeQueue = writeQueue
@@ -416,9 +448,7 @@ export async function patchAppConfig(patch: AppConfigPatch): Promise<AppConfig> 
     })
   await writeQueue
 
-  // Lazy import avoids a circular dependency with app-behavior ↔ app-config.
-  const { applyAppBehaviorFromConfig } = await import('./app-behavior')
-  applyAppBehaviorFromConfig(next)
+  await applyAppBehaviorFromConfig(next)
 
   for (const win of BrowserWindow.getAllWindows()) {
     if (!win.isDestroyed()) {

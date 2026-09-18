@@ -173,8 +173,8 @@ app.whenReady().then(() => {
   registerScriptsDirIpc(ipcMain)
   registerUpdaterIpc()
   registerAppBehavior({ getMainWindow: () => win })
-  void loadAppConfig().then((config) => {
-    applyAppBehaviorFromConfig(config)
+  void loadAppConfig().then(async (config) => {
+    await applyAppBehaviorFromConfig(config)
     void createWindow()
   })
 })

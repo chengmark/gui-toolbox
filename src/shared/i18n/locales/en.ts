@@ -39,7 +39,11 @@ export const en = {
       "Control whether the app starts with Windows and what the close button does.",
     openAtLoginLabel: "Launch on Windows startup",
     openAtLoginHint:
-      "Start GUI Toolbox when you sign in. Applies to installed (packaged) builds.",
+      "Start GUI Toolbox when you sign in. Applies to installed (packaged) builds. This starts as your normal user, not as administrator.",
+    openAtLoginAsAdminLabel: "Start as administrator",
+    openAtLoginAsAdminHint:
+      "Also start that sign-in copy elevated, so hooks work inside admin programs. Windows asks once. Installed builds only.",
+    openAtLoginAsAdminError: "Could not change administrator startup.",
     closeActionLabel: "When closing the window",
     closeActionHint:
       "Ask each time, always minimize to the tray, or always quit. You can also remember a choice from the close prompt.",

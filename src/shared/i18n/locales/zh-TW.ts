@@ -38,7 +38,11 @@ export const zhTW: MessageCatalog = {
     generalTitle: "啟動與背景",
     generalDescription: "控制是否隨 Windows 啟動，以及關閉按鈕的行為。",
     openAtLoginLabel: "開機時啟動",
-    openAtLoginHint: "登入 Windows 後自動啟動 GUI 工具箱。對已安裝（封裝）版本生效。",
+    openAtLoginHint: "登入 Windows 後自動啟動 GUI 工具箱。對已安裝（封裝）版本生效。此時以目前使用者啟動，不是系統管理員。",
+    openAtLoginAsAdminLabel: "以系統管理員身分啟動",
+    openAtLoginAsAdminHint:
+      "登入時以系統管理員權限啟動，以便在系統管理員程式中使用全域鉤子。Windows 會詢問一次。僅已安裝版本可用。",
+    openAtLoginAsAdminError: "無法變更系統管理員啟動設定。",
     closeActionLabel: "關閉視窗時",
     closeActionHint:
       "每次詢問、一律最小化到系統匣，或一律結束。也可在關閉提示中勾選「記住我的選擇」。",

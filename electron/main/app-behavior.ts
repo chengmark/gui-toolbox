@@ -18,6 +18,7 @@ import {
   type AppConfigLocale,
   type CloseAction,
 } from './app-config'
+import { applyWindowsStartup } from './win-logon'
 
 export type ClosePromptChoice = 'tray' | 'quit' | 'cancel'
 
@@ -103,19 +104,12 @@ export async function quitApp(): Promise<void> {
   app.quit()
 }
 
-export function applyOpenAtLogin(enabled: boolean): void {
-  if (!app.isPackaged) {
-    try {
-      app.setLoginItemSettings({ openAtLogin: false })
-    } catch {
-      // ignore
-    }
-    return
-  }
-  app.setLoginItemSettings({
-    openAtLogin: enabled,
-    openAsHidden: false,
-  })
+export async function applyOpenAtLogin(
+  enabled: boolean,
+  asAdmin = false,
+  interactive = false,
+): Promise<void> {
+  await applyWindowsStartup({ openAtLogin: enabled, asAdmin, interactive })
 }
 
 export function applyCloseAction(action: CloseAction): void {
@@ -132,9 +126,16 @@ export function applyCloseAction(action: CloseAction): void {
   }
 }
 
-export function applyAppBehaviorFromConfig(config: AppConfig): void {
+export async function applyAppBehaviorFromConfig(
+  config: AppConfig,
+  options?: { startupInteractive?: boolean },
+): Promise<void> {
   locale = config.common.locale
-  applyOpenAtLogin(Boolean(config.common.openAtLogin))
+  await applyOpenAtLogin(
+    Boolean(config.common.openAtLogin),
+    Boolean(config.common.openAtLoginAsAdmin),
+    Boolean(options?.startupInteractive),
+  )
   applyCloseAction(config.common.closeAction)
   if (tray) tray.setContextMenu(buildTrayMenu())
 }
