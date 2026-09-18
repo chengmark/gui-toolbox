@@ -22,6 +22,16 @@ type PathInfo = {
   isCustom: boolean
 }
 
+function startupErrorText(error: unknown, fallback: string): string {
+  const raw = error instanceof Error ? error.message : fallback
+  return (
+    raw
+      .replace(/^Error invoking remote method '[^']+':\s*/i, '')
+      .replace(/^StartupAdminError:\s*/i, '')
+      .trim() || fallback
+  )
+}
+
 export function SettingsView() {
   const { t, locale, setLocale } = useI18n()
   const { reload, config, ready, setOpenAtLogin, setOpenAtLoginAsAdmin, setCloseAction } = useAppConfig()
@@ -215,9 +225,7 @@ export function SettingsView() {
                 onCheckedChange={(checked) => {
                   setStartupError(null)
                   void setOpenAtLogin(checked).catch((error: unknown) => {
-                    setStartupError(
-                      error instanceof Error ? error.message : t("settings.openAtLoginAsAdminError"),
-                    )
+                    setStartupError(startupErrorText(error, t("settings.openAtLoginAsAdminError")))
                   })
                 }}
               />
@@ -239,9 +247,7 @@ export function SettingsView() {
                 onCheckedChange={(checked) => {
                   setStartupError(null)
                   void setOpenAtLoginAsAdmin(checked).catch((error: unknown) => {
-                    setStartupError(
-                      error instanceof Error ? error.message : t("settings.openAtLoginAsAdminError"),
-                    )
+                    setStartupError(startupErrorText(error, t("settings.openAtLoginAsAdminError")))
                   })
                 }}
               />
