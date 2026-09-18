@@ -195,6 +195,7 @@ export type AppConfig = {
   common: {
     locale: 'en' | 'zh-CN' | 'zh-TW' | null
     openAtLogin: boolean
+    openAtLoginAsAdmin: boolean
     closeAction: 'ask' | 'tray' | 'quit'
   }
   scripts: {

@@ -38,7 +38,11 @@ export const zhCN: MessageCatalog = {
     generalTitle: "启动与后台",
     generalDescription: "控制是否随 Windows 启动，以及关闭按钮的行为。",
     openAtLoginLabel: "开机时启动",
-    openAtLoginHint: "登录 Windows 后自动启动 GUI 工具箱。对已安装（打包）版本生效。",
+    openAtLoginHint: "登录 Windows 后自动启动 GUI 工具箱。对已安装（打包）版本生效。此时以当前用户启动，不是管理员。",
+    openAtLoginAsAdminLabel: "以管理员身份启动",
+    openAtLoginAsAdminHint:
+      "登录时以管理员权限启动，以便在管理员程序中使用全局钩子。Windows 会询问一次。仅已安装版本可用。",
+    openAtLoginAsAdminError: "无法更改管理员启动设置。",
     closeActionLabel: "关闭窗口时",
     closeActionHint:
       "每次询问、始终最小化到托盘，或始终退出。也可在关闭提示中勾选“记住我的选择”。",

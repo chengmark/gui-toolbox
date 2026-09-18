@@ -24,12 +24,13 @@ type PathInfo = {
 
 export function SettingsView() {
   const { t, locale, setLocale } = useI18n()
-  const { reload, config, ready, setOpenAtLogin, setCloseAction } = useAppConfig()
+  const { reload, config, ready, setOpenAtLogin, setOpenAtLoginAsAdmin, setCloseAction } = useAppConfig()
   const updater = useUpdater()
   const [pathInfo, setPathInfo] = useState<PathInfo | null>(null)
   const [draftPath, setDraftPath] = useState("")
   const [pathBusy, setPathBusy] = useState(false)
   const [pathError, setPathError] = useState<string | null>(null)
+  const [startupError, setStartupError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -212,10 +213,42 @@ export function SettingsView() {
                 checked={Boolean(config.common.openAtLogin)}
                 disabled={!ready}
                 onCheckedChange={(checked) => {
-                  void setOpenAtLogin(checked)
+                  setStartupError(null)
+                  void setOpenAtLogin(checked).catch((error: unknown) => {
+                    setStartupError(
+                      error instanceof Error ? error.message : t("settings.openAtLoginAsAdminError"),
+                    )
+                  })
                 }}
               />
             </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <div className="space-y-0.5">
+                <Label htmlFor="settings-open-at-login-admin" className="text-[12px]">
+                  {t("settings.openAtLoginAsAdminLabel")}
+                </Label>
+                <p className="text-[11px] text-muted-foreground">
+                  {t("settings.openAtLoginAsAdminHint")}
+                </p>
+              </div>
+              <Switch
+                id="settings-open-at-login-admin"
+                checked={Boolean(config.common.openAtLogin && config.common.openAtLoginAsAdmin)}
+                disabled={!ready || !config.common.openAtLogin}
+                onCheckedChange={(checked) => {
+                  setStartupError(null)
+                  void setOpenAtLoginAsAdmin(checked).catch((error: unknown) => {
+                    setStartupError(
+                      error instanceof Error ? error.message : t("settings.openAtLoginAsAdminError"),
+                    )
+                  })
+                }}
+              />
+            </div>
+            {startupError ? (
+              <p className="text-[11px] text-destructive">{startupError}</p>
+            ) : null}
 
             <div className="space-y-1.5 border-t border-border pt-4">
               <Label htmlFor="settings-close-action" className="text-[12px]">

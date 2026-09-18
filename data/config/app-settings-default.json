@@ -2,6 +2,7 @@
   "common": {
     "locale": null,
     "openAtLogin": true,
+    "openAtLoginAsAdmin": false,
     "closeAction": "ask"
   },
   "scripts": {

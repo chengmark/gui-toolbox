@@ -21,6 +21,7 @@ type AppConfigContextValue = {
   config: AppConfig
   setLocale: (locale: AppConfigLocale | null) => Promise<void>
   setOpenAtLogin: (enabled: boolean) => Promise<void>
+  setOpenAtLoginAsAdmin: (enabled: boolean) => Promise<void>
   setCloseAction: (action: CloseAction) => Promise<void>
   setScriptFavorites: (filenames: string[]) => Promise<void>
   setTranslationEnabled: (enabled: boolean) => Promise<void>
@@ -91,6 +92,13 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
     [persist],
   )
 
+  const setOpenAtLoginAsAdmin = useCallback(
+    async (enabled: boolean) => {
+      await persist({ common: { openAtLoginAsAdmin: enabled } })
+    },
+    [persist],
+  )
+
   const setCloseAction = useCallback(
     async (action: CloseAction) => {
       await persist({ common: { closeAction: action } })
@@ -131,6 +139,7 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       config,
       setLocale,
       setOpenAtLogin,
+      setOpenAtLoginAsAdmin,
       setCloseAction,
       setScriptFavorites,
       setTranslationEnabled,
@@ -142,6 +151,7 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
       config,
       setLocale,
       setOpenAtLogin,
+      setOpenAtLoginAsAdmin,
       setCloseAction,
       setScriptFavorites,
       setTranslationEnabled,
