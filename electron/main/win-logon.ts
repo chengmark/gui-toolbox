@@ -1,9 +1,9 @@
 /**
  * Windows sign-in launch.
  * Normal startup uses Electron's login item (current user, not elevated).
- * Administrator startup uses a logon scheduled task at RunLevel HighestAvailable.
- * Creating or removing that task needs a one-time UAC prompt unless this process
- * is already elevated. Windows will not elevate a Startup-folder / Run-key app.
+ * Administrator startup registers a logon scheduled task at RunLevel Highest.
+ * Creating that task needs one UAC prompt unless this process is already elevated.
+ * Windows will not elevate a Startup-folder / Run-key app.
  */
 import { app } from 'electron'
 import { execFile, execFileSync } from 'node:child_process'
@@ -14,7 +14,10 @@ import path from 'node:path'
 
 const execFileAsync = promisify(execFile)
 
-const TASK_NAME = 'GUI Toolbox'
+/** No spaces: Start-Process mangles quoted arguments, and schtasks splits this name. */
+const TASK_NAME = 'GUIToolbox'
+const LEGACY_TASK_NAME = 'GUI Toolbox'
+const DONE = '__DONE__'
 
 export class StartupAdminError extends Error {
   constructor(message: string) {
@@ -33,136 +36,167 @@ function isElevated(): boolean {
   }
 }
 
-function xmlEscape(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+function psQuote(value: string): string {
+  return `'${value.replace(/'/g, "''")}'`
+}
+
+function vbsQuote(value: string): string {
+  return value.replace(/"/g, '""')
 }
 
 async function currentUserId(): Promise<string> {
-  const { stdout } = await execFileAsync('whoami', [], { windowsHide: true })
+  const { stdout } = await execFileAsync('whoami.exe', [], { windowsHide: true })
   const userId = stdout.trim()
-  if (!userId) throw new StartupAdminError('Could not resolve the Windows user name.')
+  if (!userId) {
+    throw new StartupAdminError('Could not resolve the Windows user name.')
+  }
   return userId
 }
 
-function taskXml(exePath: string, userId: string): string {
-  return `<?xml version="1.0" encoding="UTF-16"?>
-<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
-  <RegistrationInfo>
-    <Description>Launch GUI Toolbox at sign-in with administrator rights</Description>
-  </RegistrationInfo>
-  <Triggers>
-    <LogonTrigger>
-      <Enabled>true</Enabled>
-      <UserId>${xmlEscape(userId)}</UserId>
-    </LogonTrigger>
-  </Triggers>
-  <Principals>
-    <Principal id="Author">
-      <UserId>${xmlEscape(userId)}</UserId>
-      <LogonType>InteractiveToken</LogonType>
-      <RunLevel>HighestAvailable</RunLevel>
-    </Principal>
-  </Principals>
-  <Settings>
-    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
-    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
-    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
-    <AllowHardTerminate>true</AllowHardTerminate>
-    <StartWhenAvailable>false</StartWhenAvailable>
-    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
-    <Enabled>true</Enabled>
-    <Hidden>false</Hidden>
-    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
-  </Settings>
-  <Actions Context="Author">
-    <Exec>
-      <Command>${xmlEscape(exePath)}</Command>
-    </Exec>
-  </Actions>
-</Task>`
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
 }
 
-async function runSchtasks(args: string[], elevate: boolean): Promise<void> {
-  if (!elevate) {
-    await execFileAsync('schtasks.exe', args, { windowsHide: true })
-    return
+async function readText(filePath: string): Promise<string | null> {
+  try {
+    return await fs.readFile(filePath, 'utf8')
+  } catch {
+    return null
   }
+}
 
-  const scriptPath = path.join(
-    os.tmpdir(),
-    `gui-toolbox-schtasks-${process.pid}-${Date.now()}.ps1`,
-  )
-  const argList = args.map((arg) => `'${arg.replace(/'/g, "''")}'`).join(', ')
-  const script = [
-    `$p = Start-Process -FilePath 'schtasks.exe' -Verb RunAs -Wait -PassThru -ArgumentList @(${argList})`,
-    'if ($null -eq $p) { exit 1 }',
-    'exit $p.ExitCode',
+function isCancelled(text: string): boolean {
+  return /cancel|1223|800704c7|2147023673|取消/i.test(text)
+}
+
+function resultMessage(log: string): string {
+  return log
+    .replaceAll(DONE, '')
+    .replace(/^\uFEFF/, '')
+    .trim()
+}
+
+async function runPowerShell(script: string, elevate: boolean): Promise<void> {
+  const id = `${process.pid}-${Date.now()}`
+  const dir = os.tmpdir()
+  const scriptPath = path.join(dir, `gui-toolbox-startup-${id}.ps1`)
+  const logPath = path.join(dir, `gui-toolbox-startup-${id}.log`)
+  const vbsPath = path.join(dir, `gui-toolbox-startup-${id}.vbs`)
+
+  const body = [
+    '$ErrorActionPreference = \'Stop\'',
+    'try {',
+    script,
+    `  Set-Content -LiteralPath ${psQuote(logPath)} -Encoding UTF8 -Value "OK\`r\`n${DONE}"`,
+    '  exit 0',
+    '} catch {',
+    `  Set-Content -LiteralPath ${psQuote(logPath)} -Encoding UTF8 -Value ($_.Exception.Message + "\`r\`n${DONE}")`,
+    '  exit 1',
+    '}',
     '',
   ].join('\r\n')
 
-  await fs.writeFile(scriptPath, script, 'utf8')
+  await fs.writeFile(scriptPath, `\uFEFF${body}`, 'utf8')
+
   try {
-    await execFileAsync(
-      'powershell.exe',
-      ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', scriptPath],
-      { windowsHide: true },
-    )
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
-    if (/cancel/i.test(message)) {
+    if (!elevate) {
+      try {
+        await execFileAsync(
+          'powershell.exe',
+          ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', scriptPath],
+          { windowsHide: true },
+        )
+      } catch {
+        // The script writes the real error to the log.
+      }
+    } else {
+      const psArgs = `-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "${scriptPath}"`
+      const vbs = [
+        'On Error Resume Next',
+        'Set shell = CreateObject("Shell.Application")',
+        `shell.ShellExecute "powershell.exe", "${vbsQuote(psArgs)}", "", "runas", 0`,
+        'If Err.Number <> 0 Then',
+        '  Set stream = CreateObject("Scripting.FileSystemObject").CreateTextFile("' +
+          vbsQuote(logPath) +
+          '", True)',
+        '  stream.WriteLine "CANCELLED " & Err.Number & " " & Err.Description',
+        `  stream.WriteLine "${DONE}"`,
+        '  stream.Close',
+        'End If',
+        '',
+      ].join('\r\n')
+      await fs.writeFile(vbsPath, vbs, 'utf8')
+      await execFileAsync('wscript.exe', ['//nologo', vbsPath], { windowsHide: true })
+
+      const deadline = Date.now() + 3 * 60 * 1000
+      let log: string | null = null
+      while (Date.now() < deadline) {
+        log = await readText(logPath)
+        if (log?.includes(DONE)) break
+        await sleep(250)
+      }
+      if (!log?.includes(DONE)) {
+        throw new StartupAdminError(
+          'Timed out waiting for the Windows permission prompt.',
+        )
+      }
+    }
+
+    const log = (await readText(logPath)) ?? ''
+    const detail = resultMessage(log)
+    if (isCancelled(detail) || isCancelled(log)) {
       throw new StartupAdminError(
         'Administrator startup was cancelled. Approve the Windows prompt to enable it.',
       )
     }
-    throw new StartupAdminError(
-      'Could not register administrator startup. Approve the Windows prompt and try again.',
-    )
+    if (!/^OK\b/.test(detail)) {
+      throw new StartupAdminError(
+        detail
+          ? `Could not register administrator startup. ${detail}`
+          : 'Could not register administrator startup.',
+      )
+    }
   } finally {
     await fs.unlink(scriptPath).catch(() => undefined)
+    await fs.unlink(logPath).catch(() => undefined)
+    await fs.unlink(vbsPath).catch(() => undefined)
   }
 }
 
-async function adminTaskExists(): Promise<boolean> {
-  try {
-    await execFileAsync('schtasks.exe', ['/Query', '/TN', TASK_NAME], {
-      windowsHide: true,
-    })
-    return true
-  } catch {
-    return false
-  }
+function registerScript(exePath: string, userId: string): string {
+  return [
+    `Unregister-ScheduledTask -TaskName ${psQuote(TASK_NAME)} -Confirm:$false -ErrorAction SilentlyContinue`,
+    `Unregister-ScheduledTask -TaskName ${psQuote(LEGACY_TASK_NAME)} -Confirm:$false -ErrorAction SilentlyContinue`,
+    `$action = New-ScheduledTaskAction -Execute ${psQuote(exePath)}`,
+    `$trigger = New-ScheduledTaskTrigger -AtLogOn -User ${psQuote(userId)}`,
+    `$principal = New-ScheduledTaskPrincipal -UserId ${psQuote(userId)} -LogonType Interactive -RunLevel Highest`,
+    '$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries',
+    '$settings.ExecutionTimeLimit = [TimeSpan]::Zero',
+    `Register-ScheduledTask -TaskName ${psQuote(TASK_NAME)} -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force | Out-Null`,
+  ].join('\r\n')
 }
 
-async function deleteAdminTask(): Promise<void> {
-  if (!(await adminTaskExists())) return
-  try {
-    await runSchtasks(['/Delete', '/TN', TASK_NAME, '/F'], false)
-  } catch (error) {
-    if (error instanceof StartupAdminError) throw error
-    await runSchtasks(['/Delete', '/TN', TASK_NAME, '/F'], true)
-  }
+function removeScript(): string {
+  return [
+    `Unregister-ScheduledTask -TaskName ${psQuote(TASK_NAME)} -Confirm:$false -ErrorAction SilentlyContinue`,
+    `Unregister-ScheduledTask -TaskName ${psQuote(LEGACY_TASK_NAME)} -Confirm:$false -ErrorAction SilentlyContinue`,
+  ].join('\r\n')
 }
 
 async function createAdminTask(): Promise<void> {
   const userId = await currentUserId()
-  const xmlPath = path.join(
-    os.tmpdir(),
-    `gui-toolbox-logon-${process.pid}-${Date.now()}.xml`,
-  )
-  const xml = taskXml(process.execPath, userId)
-  const body = Buffer.concat([
-    Buffer.from([0xff, 0xfe]),
-    Buffer.from(xml, 'utf16le'),
-  ])
-  await fs.writeFile(xmlPath, body)
+  await runPowerShell(registerScript(process.execPath, userId), !isElevated())
+}
+
+async function deleteAdminTask(): Promise<void> {
   try {
-    await runSchtasks(['/Create', '/TN', TASK_NAME, '/XML', xmlPath, '/F'], !isElevated())
-  } finally {
-    await fs.unlink(xmlPath).catch(() => undefined)
+    await runPowerShell(removeScript(), false)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    if (!/access is denied|拒绝访问|0x80070005/i.test(message)) throw error
+    await runPowerShell(removeScript(), true)
   }
 }
 
@@ -201,7 +235,6 @@ export async function applyWindowsStartup(options: {
   }
 
   if (!options.interactive) {
-    // Elevated logon task and the Run key would both start the app.
     setUserLoginItem(options.openAtLogin && !options.asAdmin)
     return
   }
