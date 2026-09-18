@@ -141,6 +141,31 @@ export type KeybindsState = {
   lastMessage: string | null
 }
 
+contextBridge.exposeInMainWorld('keybindRecorderApi', {
+  start: (): Promise<{ ok: boolean }> =>
+    ipcRenderer.invoke('keybindRecorder:start'),
+  stop: (): Promise<{ ok: boolean }> =>
+    ipcRenderer.invoke('keybindRecorder:stop'),
+  onResult: (listener: (bind: string) => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, bind: string) => {
+      listener(bind)
+    }
+    ipcRenderer.on('keybindRecorder:result', handler)
+    return () => {
+      ipcRenderer.off('keybindRecorder:result', handler)
+    }
+  },
+  onCancel: (listener: () => void) => {
+    const handler = () => {
+      listener()
+    }
+    ipcRenderer.on('keybindRecorder:cancel', handler)
+    return () => {
+      ipcRenderer.off('keybindRecorder:cancel', handler)
+    }
+  },
+})
+
 contextBridge.exposeInMainWorld('keybindsApi', {
   getState: (): Promise<KeybindsState> => ipcRenderer.invoke('keybinds:getState'),
   refreshScripts: (): Promise<KeybindsState> =>

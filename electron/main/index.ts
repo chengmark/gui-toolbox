@@ -27,6 +27,10 @@ import {
   startKeybinds,
   stopKeybinds,
 } from './keybinds'
+import {
+  registerKeybindRecorderIpc,
+  stopKeybindRecording,
+} from './keybind-recorder'
 import { registerAppConfigIpc, loadAppConfig } from './app-config'
 import { destroyAppToast } from './app-toast'
 import { registerScriptsDirIpc } from './scripts-dir'
@@ -164,6 +168,7 @@ app.whenReady().then(() => {
   registerTranslatorIpc(ipcMain)
   registerScriptRunnerIpc(ipcMain)
   registerKeybindsIpc(ipcMain)
+  registerKeybindRecorderIpc(ipcMain)
   registerAppConfigIpc(ipcMain)
   registerScriptsDirIpc(ipcMain)
   registerUpdaterIpc()
@@ -176,6 +181,7 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   // When close-to-tray hides the window, this may not fire until a real quit.
+  stopKeybindRecording()
   stopTranslator()
   stopScriptRunner()
   stopKeybinds()
@@ -185,6 +191,7 @@ app.on('window-all-closed', () => {
 })
 
 app.on('before-quit', () => {
+  stopKeybindRecording()
   stopTranslator()
   stopScriptRunner()
   stopKeybinds()

@@ -16,6 +16,7 @@ import {
 import { getKeybindJsonPath, getScriptsDir, getShippedDataDir, legacyKeybindPaths } from './paths'
 import { resolveKeyCode } from './runner/keys'
 import { showAppToast } from './app-toast'
+import { isKeybindRecording } from './keybind-recorder'
 
 export type KeybindEntry = {
   id: string
@@ -205,10 +206,12 @@ class KeybindsService {
   private writeQueue: Promise<void> = Promise.resolve()
 
   private onKeyDown = (event: UiohookKeyboardEvent) => {
+    if (isKeybindRecording()) return
     this.dispatchKeyboard(event)
   }
 
   private onMouseDown = (event: UiohookMouseEvent) => {
+    if (isKeybindRecording()) return
     this.dispatchMouse(event)
   }
 

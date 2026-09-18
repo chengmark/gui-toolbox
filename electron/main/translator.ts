@@ -16,6 +16,7 @@ import {
 } from '../../src/shared/keybind/model'
 import { getTranslatorSettingsPath, legacyTranslatorSettingsPaths } from './paths'
 import { loadAppConfig, patchAppConfig } from './app-config'
+import { isKeybindRecording } from './keybind-recorder'
 
 export type TranslatorTask = 'idle' | 'pending' | 'converting'
 
@@ -209,14 +210,17 @@ class TranslatorService {
   private fieldConvertBusy = false
 
   private onKeyDown = (event: UiohookKeyboardEvent) => {
+    if (isKeybindRecording()) return
     this.onKeyEvent(event, 'down')
   }
 
   private onKeyUp = (event: UiohookKeyboardEvent) => {
+    if (isKeybindRecording()) return
     this.onKeyEvent(event, 'up')
   }
 
   private onMouseDown = (event: UiohookMouseEvent) => {
+    if (isKeybindRecording()) return
     this.onMouseEvent(event)
   }
 

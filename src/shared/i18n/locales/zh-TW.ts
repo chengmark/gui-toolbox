@@ -87,6 +87,8 @@ export const zhTW: MessageCatalog = {
     opening: "正在開啟腳本…",
     loading: "正在載入腳本…",
     empty: "找不到腳本",
+    addScript: "新增腳本",
+    newScriptName: "新腳本",
     folderLabel: "腳本資料夾",
     folderBrowse: "瀏覽…",
     folderApply: "套用",

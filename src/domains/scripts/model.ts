@@ -110,6 +110,24 @@ export function createEmptyStep(): ScriptStep {
   return { command: "Delay", args: [100] }
 }
 
+/** Blank script document for newly created profiles. */
+export function createEmptyScriptDocument(name: string): ScriptDocument {
+  return {
+    schemaVersion: SCRIPT_SCHEMA_VERSION,
+    name: name.trim() || "New script",
+    loop: [],
+  }
+}
+
+/** Next free `new-script.json` / `new-script-2.json` … filename. */
+export function nextNewScriptFilename(existing: readonly string[]): string {
+  const taken = new Set(existing.map((name) => name.toLowerCase()))
+  if (!taken.has("new-script.json")) return "new-script.json"
+  let index = 2
+  while (taken.has(`new-script-${index}.json`)) index += 1
+  return `new-script-${index}.json`
+}
+
 export function createEmptyProcessSubroutine(): ProcessSubroutine {
   return { kind: "process", file: "", args: [] }
 }

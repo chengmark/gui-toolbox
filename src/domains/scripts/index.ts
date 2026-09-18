@@ -7,6 +7,8 @@ export type {
 } from "@/domains/scripts/model"
 export {
   createScriptId,
+  createEmptyScriptDocument,
+  nextNewScriptFilename,
   SCRIPT_COMMANDS,
   SCRIPT_SCHEMA_VERSION,
   normalizeScriptDocument,

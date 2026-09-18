@@ -22,10 +22,17 @@ export type UseKeybindRecordingResult = {
   toggle: () => void
 }
 
+function hasGlobalMouseRecorder(): boolean {
+  return typeof window !== "undefined" && window.keybindRecorderApi != null
+}
+
 /**
  * Shared keybind recording logic: keyboard chords, mouse buttons, Escape to cancel.
  * Completes on the first non-modifier key or mouse button (with held modifiers).
  * Lone modifiers commit on keyup when no other modifiers remain held.
+ *
+ * Mouse: prefers main-process uiohook for clicks outside the app window (MB1–MB5),
+ * and uses DOM mousedown for in-window clicks so the Record button is ignored.
  */
 export function useKeybindRecording({
   enabled = true,
@@ -48,6 +55,7 @@ export function useKeybindRecording({
   const stop = useCallback(() => {
     setRecording(false)
     sawPrimaryRef.current = false
+    void window.keybindRecorderApi?.stop()
   }, [])
 
   const start = useCallback(() => {
@@ -64,12 +72,26 @@ export function useKeybindRecording({
   useEffect(() => {
     if (!recording) return
 
+    let done = false
+
     const commit = (raw: string) => {
+      if (done) return
       const next = normalizeKeybind(raw)
       if (!next) return
+      done = true
       onRecordRef.current(next)
       sawPrimaryRef.current = false
       setRecording(false)
+      void window.keybindRecorderApi?.stop()
+    }
+
+    const cancel = () => {
+      if (done) return
+      done = true
+      onCancelRef.current?.()
+      sawPrimaryRef.current = false
+      setRecording(false)
+      void window.keybindRecorderApi?.stop()
     }
 
     const onKeyDown = (event: KeyboardEvent) => {
@@ -77,9 +99,7 @@ export function useKeybindRecording({
       event.stopPropagation()
 
       if (event.key === "Escape") {
-        onCancelRef.current?.()
-        sawPrimaryRef.current = false
-        setRecording(false)
+        cancel()
         return
       }
 
@@ -111,13 +131,56 @@ export function useKeybindRecording({
       commit(formatKeybind(parts))
     }
 
+    const onContextMenu = (event: MouseEvent) => {
+      // Keep MB2 from opening the Electron/Chromium context menu mid-record.
+      event.preventDefault()
+      event.stopPropagation()
+    }
+
+    const onAuxClick = (event: MouseEvent) => {
+      // Middle/side buttons: some environments deliver auxclick more reliably.
+      const target = event.target as HTMLElement | null
+      if (target?.closest("[data-keybind-record]")) return
+      if (event.button === 0) return
+
+      event.preventDefault()
+      event.stopPropagation()
+
+      const parts = keybindFromMouseEvent(event)
+      if (!parts) return
+      sawPrimaryRef.current = true
+      commit(formatKeybind(parts))
+    }
+
     window.addEventListener("keydown", onKeyDown, true)
     window.addEventListener("keyup", onKeyUp, true)
     window.addEventListener("mousedown", onMouseDown, true)
+    window.addEventListener("auxclick", onAuxClick, true)
+    window.addEventListener("contextmenu", onContextMenu, true)
+
+    const api = hasGlobalMouseRecorder() ? window.keybindRecorderApi : null
+    let offResult: (() => void) | undefined
+    let offCancel: (() => void) | undefined
+    if (api) {
+      void api.start()
+      offResult = api.onResult((bind) => {
+        sawPrimaryRef.current = true
+        commit(bind)
+      })
+      offCancel = api.onCancel(() => {
+        cancel()
+      })
+    }
+
     return () => {
       window.removeEventListener("keydown", onKeyDown, true)
       window.removeEventListener("keyup", onKeyUp, true)
       window.removeEventListener("mousedown", onMouseDown, true)
+      window.removeEventListener("auxclick", onAuxClick, true)
+      window.removeEventListener("contextmenu", onContextMenu, true)
+      offResult?.()
+      offCancel?.()
+      void api?.stop()
     }
   }, [recording])
 

@@ -14,6 +14,15 @@ alwaysApply: true
 5. Push the feature branch when work is ready to share.
 6. **Do not open a PR to `main` unless the user explicitly asks.**
 
+## User shorthand (follow exactly)
+
+| User says | Do this |
+|-----------|---------|
+| **merge develop** | Merge the current feature branch into `develop` (only). Do not touch `main`. |
+| **release this feat** | Merge the feature branch into `develop`, then merge `develop` into `main` so the release pipeline runs. |
+
+When performing either flow: push as needed, prefer merge commits (or the repo’s usual merge style), and do not force-push `main` / `develop`.
+
 ## Releases
 
 Merges into `main` trigger `.github/workflows/release.yml`, which:
