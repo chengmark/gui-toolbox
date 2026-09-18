@@ -90,6 +90,8 @@ export const en = {
     opening: "Opening script…",
     loading: "Loading scripts…",
     empty: "No scripts found",
+    addScript: "Add script",
+    newScriptName: "New script",
     folderLabel: "Scripts folder",
     folderBrowse: "Browse…",
     folderApply: "Apply",

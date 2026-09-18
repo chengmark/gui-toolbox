@@ -1,7 +1,8 @@
 import { useState, type AnimationEvent } from "react"
-import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react"
+import { ArrowDown, ArrowUp, ArrowUpDown, Plus } from "lucide-react"
 import { PageHeader } from "@/shared"
 import { useI18n } from "@/shared/i18n"
+import { Button } from "@/shared/ui/button"
 import { DeleteScriptDialog } from "@/domains/scripts/components/DeleteScriptDialog"
 import { ScriptsFolderBar } from "@/domains/scripts/components/ScriptsFolderBar"
 import {
@@ -113,6 +114,11 @@ export function ScriptsView() {
     })
   }
 
+  async function onAddScript() {
+    const created = await catalog.create(t("scripts.newScriptName"))
+    if (created) editor.open(created.filename)
+  }
+
   function requestEditorClose() {
     if (editorLeaving) return
     const reduceMotion =
@@ -164,6 +170,12 @@ export function ScriptsView() {
 
       <ScriptsFolderBar onFolderChanged={() => catalog.reload()} />
 
+      {(catalog.actionError || catalog.runnerError) && (
+        <div className="shrink-0 border-b border-destructive/40 bg-destructive/10 px-4 py-2 text-[12px] text-destructive">
+          {catalog.actionError ?? catalog.runnerError}
+        </div>
+      )}
+
       <div className="flex min-h-0 flex-1 flex-col">
         {catalog.loading ? (
           <div className="flex flex-1 items-center justify-center text-[12px] text-muted-foreground">
@@ -173,73 +185,98 @@ export function ScriptsView() {
           <div className="flex flex-1 items-center justify-center px-6 text-center text-[12px] text-destructive">
             {catalog.loadError}
           </div>
-        ) : catalog.scripts.length === 0 ? (
-          <div className="flex flex-1 items-center justify-center text-[12px] text-muted-foreground">
-            {t("scripts.empty")}
-          </div>
         ) : (
-          <div className="cursor-scroll min-h-0 flex-1 overflow-auto">
-            <table className="w-full border-collapse">
-              <colgroup>
-                <col className="w-14" />
-                <col />
-                <col className="w-full" />
-                <col />
-                <col />
-                <col />
-              </colgroup>
-              <thead className="sticky top-0 z-10 bg-sidebar">
-                <tr className="border-b border-border text-left text-[11px] uppercase tracking-wide text-muted-foreground">
-                  <th className="px-4 py-2 text-center font-medium whitespace-nowrap">#</th>
-                  <SortableTh label={t("scripts.colName")} column="name" sort={sort} onSort={toggleSort} />
-                  <SortableTh
-                    label={t("scripts.colFilename")}
-                    column="filename"
-                    sort={sort}
-                    onSort={toggleSort}
-                  />
-                  <SortableTh
-                    label={t("scripts.colToggle")}
-                    column="toggle"
-                    sort={sort}
-                    onSort={toggleSort}
-                    className="px-3"
-                  />
-                  <SortableTh
-                    label={t("scripts.colStatus")}
-                    column="status"
-                    sort={sort}
-                    onSort={toggleSort}
-                    className="px-3"
-                  />
-                  <th
-                    className="px-3 py-2 font-medium whitespace-nowrap"
-                    aria-label={t("common.actions")}
-                  />
-                </tr>
-              </thead>
-              <tbody>
-                {sortedScripts.map((script, index) => (
-                  <ScriptRow
-                    key={script.id}
-                    index={index + 1}
-                    filename={script.filename}
-                    name={script.name}
-                    toggle={script.toggle}
-                    favorite={catalog.isFavorite(script.filename)}
-                    runState={catalog.getRunState(script.filename)}
-                    onNameChange={catalog.updateName}
-                    onFilenameChange={catalog.rename}
-                    onToggleFavorite={catalog.toggleFavorite}
-                    onToggleLoaded={catalog.toggleActive}
-                    onEdit={(filename) => editor.open(filename)}
-                    onRequestDelete={catalog.requestDelete}
-                    error={catalog.rowErrors[script.filename] ?? null}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <div className="flex shrink-0 items-center justify-end gap-2 border-b border-border px-4 py-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                onClick={() => void onAddScript()}
+              >
+                <Plus className="size-3.5" />
+                {t("scripts.addScript")}
+              </Button>
+            </div>
+
+            {catalog.scripts.length === 0 ? (
+              <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
+                <p className="text-[12px] text-muted-foreground">{t("scripts.empty")}</p>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => void onAddScript()}
+                >
+                  <Plus className="size-3.5" />
+                  {t("scripts.addScript")}
+                </Button>
+              </div>
+            ) : (
+              <div className="cursor-scroll min-h-0 flex-1 overflow-auto">
+                <table className="w-full border-collapse">
+                  <colgroup>
+                    <col className="w-14" />
+                    <col />
+                    <col className="w-full" />
+                    <col />
+                    <col />
+                    <col />
+                  </colgroup>
+                  <thead className="sticky top-0 z-10 bg-sidebar">
+                    <tr className="border-b border-border text-left text-[11px] uppercase tracking-wide text-muted-foreground">
+                      <th className="px-4 py-2 text-center font-medium whitespace-nowrap">#</th>
+                      <SortableTh label={t("scripts.colName")} column="name" sort={sort} onSort={toggleSort} />
+                      <SortableTh
+                        label={t("scripts.colFilename")}
+                        column="filename"
+                        sort={sort}
+                        onSort={toggleSort}
+                      />
+                      <SortableTh
+                        label={t("scripts.colToggle")}
+                        column="toggle"
+                        sort={sort}
+                        onSort={toggleSort}
+                        className="px-3"
+                      />
+                      <SortableTh
+                        label={t("scripts.colStatus")}
+                        column="status"
+                        sort={sort}
+                        onSort={toggleSort}
+                        className="px-3"
+                      />
+                      <th
+                        className="px-3 py-2 font-medium whitespace-nowrap"
+                        aria-label={t("common.actions")}
+                      />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedScripts.map((script, index) => (
+                      <ScriptRow
+                        key={script.id}
+                        index={index + 1}
+                        filename={script.filename}
+                        name={script.name}
+                        toggle={script.toggle}
+                        favorite={catalog.isFavorite(script.filename)}
+                        runState={catalog.getRunState(script.filename)}
+                        onNameChange={catalog.updateName}
+                        onFilenameChange={catalog.rename}
+                        onToggleFavorite={catalog.toggleFavorite}
+                        onToggleLoaded={catalog.toggleActive}
+                        onEdit={(filename) => editor.open(filename)}
+                        onRequestDelete={catalog.requestDelete}
+                        error={catalog.rowErrors[script.filename] ?? null}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
         )}
       </div>
 

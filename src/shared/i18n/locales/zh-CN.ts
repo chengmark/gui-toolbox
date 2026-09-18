@@ -87,6 +87,8 @@ export const zhCN: MessageCatalog = {
     opening: "正在打开脚本…",
     loading: "正在加载脚本…",
     empty: "未找到脚本",
+    addScript: "添加脚本",
+    newScriptName: "新脚本",
     folderLabel: "脚本文件夹",
     folderBrowse: "浏览…",
     folderApply: "应用",

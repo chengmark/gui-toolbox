@@ -61,6 +61,7 @@ export function KeybindRecorder({
         title={value ? formatKeybindLabel(value) : undefined}
         onChange={(event) => onChange(event.target.value)}
         onBlur={(event) => {
+          if (recording) return
           const next = event.target.value.trim()
           if (next !== value) onChange(next)
         }}
@@ -72,9 +73,17 @@ export function KeybindRecorder({
         data-keybind-record=""
         className="shrink-0 rounded-md"
         disabled={disabled}
+        onPointerDown={(event) => {
+          // Stop recording before uiohook/DOM can treat this click as mb1.
+          if (recording) {
+            event.preventDefault()
+            event.stopPropagation()
+            stop()
+          }
+        }}
         onClick={() => {
-          if (recording) stop()
-          else toggle()
+          if (recording) return
+          toggle()
         }}
       >
         <Keyboard className="size-3.5" />

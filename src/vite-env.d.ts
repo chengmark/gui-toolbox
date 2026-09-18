@@ -147,6 +147,12 @@ interface Window {
     updateSettings: (patch: Partial<TranslatorSettings>) => Promise<TranslatorStatus>
     onStatus: (listener: (status: TranslatorStatus) => void) => () => void
   }
+  keybindRecorderApi: {
+    start: () => Promise<{ ok: boolean }>
+    stop: () => Promise<{ ok: boolean }>
+    onResult: (listener: (bind: string) => void) => () => void
+    onCancel: (listener: () => void) => () => void
+  }
   keybindsApi: {
     getState: () => Promise<KeybindsState>
     refreshScripts: () => Promise<KeybindsState>

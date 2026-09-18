@@ -12,6 +12,7 @@ import {
 } from '../../../src/shared/keybind/model'
 import { normalizeScriptDocument, getScriptsDir, readScript } from '../scripts'
 import { resolveKeyCode } from './keys'
+import { isKeybindRecording } from '../keybind-recorder'
 import type {
   InlineSubroutine,
   ProcessSubroutine,
@@ -134,6 +135,8 @@ class ScriptRunnerService {
   private toggleBinding: KeybindParts | null = null
 
   private onKeyDown = (event: UiohookKeyboardEvent) => {
+    if (isKeybindRecording()) return
+
     // Shift+Esc unloads
     if (
       this.filename &&
@@ -151,6 +154,7 @@ class ScriptRunnerService {
   }
 
   private onMouseDown = (event: UiohookMouseEvent) => {
+    if (isKeybindRecording()) return
     if (!this.filename || !this.ctx || !this.toggleBinding) return
     if (matchesToggleMouse(event, this.toggleBinding)) {
       this.handleToggleKey()

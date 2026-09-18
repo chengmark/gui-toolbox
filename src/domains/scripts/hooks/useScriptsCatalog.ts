@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useAppConfig } from "@/domains/persistence"
 import {
+  createEmptyScriptDocument,
   createScriptId,
+  nextNewScriptFilename,
   type PendingDelete,
   type ScriptItem,
 } from "@/domains/scripts/model"
@@ -44,6 +46,7 @@ export function useScriptsCatalog() {
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [runnerError, setRunnerError] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const persistFavorites = useCallback(
     (next: Set<string>) => {
@@ -158,8 +161,12 @@ export function useScriptsCatalog() {
   }, [])
 
   const applySavedScript = useCallback((entry: ScriptEntry) => {
-    setScripts((current) =>
-      current.map((item) =>
+    setScripts((current) => {
+      const index = current.findIndex((item) => item.filename === entry.filename)
+      if (index < 0) {
+        return [...current, entryToItem(entry)]
+      }
+      return current.map((item) =>
         item.filename === entry.filename
           ? {
               ...item,
@@ -167,9 +174,32 @@ export function useScriptsCatalog() {
               toggle: entry.toggle,
             }
           : item,
-      ),
-    )
+      )
+    })
   }, [])
+
+  const create = useCallback(
+    async (displayName: string): Promise<ScriptItem | null> => {
+      try {
+        setActionError(null)
+        const filename = nextNewScriptFilename(scripts.map((item) => item.filename))
+        const doc = createEmptyScriptDocument(displayName)
+        const entry = await window.scriptsApi.write(
+          filename,
+          doc as unknown as Record<string, unknown>,
+        )
+        const item = entryToItem(entry)
+        setScripts((current) => [...current, item])
+        return item
+      } catch (error) {
+        setActionError(
+          error instanceof Error ? error.message : "Failed to create script",
+        )
+        return null
+      }
+    },
+    [scripts],
+  )
 
   const rename = useCallback(
     async (filename: string, nextFilename: string) => {
@@ -304,6 +334,7 @@ export function useScriptsCatalog() {
     scripts,
     loading,
     loadError,
+    actionError,
     rowErrors,
     loadedFilename,
     getRunState,
@@ -314,6 +345,7 @@ export function useScriptsCatalog() {
     deleting,
     runnerError,
     reload,
+    create,
     updateName,
     applySavedScript,
     rename,
