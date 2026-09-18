@@ -173,7 +173,7 @@ function registerScript(exePath: string, userId: string): string {
     `$trigger = New-ScheduledTaskTrigger -AtLogOn -User ${psQuote(userId)}`,
     `$principal = New-ScheduledTaskPrincipal -UserId ${psQuote(userId)} -LogonType Interactive -RunLevel Highest`,
     '$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries',
-    '$settings.ExecutionTimeLimit = [TimeSpan]::Zero',
+    "$settings.ExecutionTimeLimit = 'PT0S'",
     `Register-ScheduledTask -TaskName ${psQuote(TASK_NAME)} -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force | Out-Null`,
   ].join('\r\n')
 }
